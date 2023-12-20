@@ -5,14 +5,12 @@ import sys
 import machine
 import logging as log
 from .ui_calendar import uiCalendar
-from .test import test
 
 def main():
     log.setLevel(log.INFO)
     log.info("EFore Demo Started")
     
     try:
-        test()
         uiCalendar().start()
     except Exception as e:
         log.exception(e,'Exception in main.py')
