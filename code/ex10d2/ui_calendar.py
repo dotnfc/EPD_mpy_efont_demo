@@ -1,4 +1,6 @@
-
+"""
+    日历页面
+"""
 import time
 import json
 import urequests as requests
@@ -8,7 +10,7 @@ import calender
 from display3c import *
 from efont import *
 from qw_icons import *
-import ulunar
+import ulunar, holidays
 import gc
 
 gc.enable()
@@ -48,12 +50,13 @@ class uiCalendar(object):
             days += 1
             if days == 7:
                 days = 0
-                print("")
     
     def getZodiacIcon(self, lunar):
+        '''依据地支，获取生肖的图标'''
         return zodiac_icon_fill[lunar.dizhi]
     
     def drawTitleBar(self, month, mday, lunar):
+        '''显示页面的标题栏'''
         # 显示 月份
         self.epd.setColor(EPD_RED, EPD_WHITE)
         self.epd.rect_3c(4, 8, 180, 88, 1, True)
@@ -89,7 +92,11 @@ class uiCalendar(object):
             i = i + 1
 
     def drawOneDay(self, nmon, nday, idate, rect):
-        # print(f"({rect[0]},{rect[1]},{rect[2]},{rect[3]})", end="")
+        '''显示某一天'''
+        
+        if nmon != idate.month:
+            return
+        
         lunar = ulunar.Lunar(idate.year, idate.month, idate.day)
         
         # 阳历
@@ -103,17 +110,21 @@ class uiCalendar(object):
         self.epd.selectFont("simyou")
         
         # 农历
-        self.epd.setColor(EPD_BLACK, EPD_WHITE)
-        lday = f"{lunar.getDate()}"
-        self.epd.drawText(rect[0], rect[1] + 50, rect[2], rect[3], ALIGN_CENTER, lday, 20)
-        
+        str = holidays.get_otherHolidays(idate.year, idate.month, idate.day)
+        if str == '' or len(str) > 7:
+            self.epd.setColor(EPD_BLACK, EPD_WHITE)
+            lday = f"{lunar.getDate()}"
+            self.epd.drawText(rect[0], rect[1] + 50, rect[2], rect[3], ALIGN_CENTER, lday, 20)
+        else:
+            self.epd.drawText(rect[0], rect[1] + 50, rect[2], rect[3], ALIGN_CENTER, str, 20)
+            
         # 今天
         if nmon == idate.month and nday == idate.day:
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
             self.epd.rect_3c(rect[0] + 1, rect[1] + 1, rect[2] - 2, rect[3] - 2, 1)
         
-    
     def drawBody(self, year, month, mday, lunar):
+        '''显示主体内容，阳历、农历日期，节假日信息等'''
         x_pos = (4, 140, 276, 412, 548, 684, 820, 956 )
         y_pos = (154, 234, 314, 394, 474, 554, 634)
         x_span= 136
@@ -130,7 +141,7 @@ class uiCalendar(object):
             if x == 7:
                 x = 0
                 y += 1
-        
+
     def start(self):
         """Run the weather station display loop"""
         log.info("uiTest Started")
@@ -144,3 +155,4 @@ class uiCalendar(object):
 
         self.epd.refresh()
         self.epd.deepSleep(15000)
+
