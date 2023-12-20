@@ -387,6 +387,9 @@ class date:
     def isoweekday(self):
         return self._ord % 7 or 7
 
+    def isoWeekNumber(self):
+        return self._ord // 7 + 1
+    
     def isoformat(self):
         return _d2iso(self._ord)
 
@@ -627,6 +630,10 @@ class datetime:
         self._fd = fold
 
     @classmethod
+    def localtime(cls):
+        return cls(*_tmod.localtime()[:5])
+    
+    @classmethod
     def fromtimestamp(cls, ts, tz=None):
         if isinstance(ts, float):
             ts, us = divmod(round(ts * 1_000_000), 1_000_000)
@@ -850,6 +857,12 @@ class datetime:
     def isoweekday(self):
         return self._d % 7 or 7
 
+    def isoWeekNumber(self):
+        begin = date(self.date().year, 1, 1)
+        end = self.date()
+        delta = end - begin
+        return delta.days // 7 + 1
+    
     def isoformat(self, sep="T", timespec="auto"):
         return _d2iso(self._d) + sep + _t2iso(self._t, timespec, self, self._tz)
 
