@@ -6,7 +6,10 @@
 # by dotnfc, 2023/09/22
 #
 from micropython import const
-from machine import Pin
+try:
+    from machine import Pin
+except ImportError:
+    from usdl2_pin import Pin
 
 # led
 LED_BLUE     = Pin(4)

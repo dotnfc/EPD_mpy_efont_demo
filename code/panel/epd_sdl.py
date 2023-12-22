@@ -174,6 +174,7 @@ class EpdSDLBase():
                     self._pixel[self._w * (py + y_) + (px + x_)] = color
                     x_ += 1
                     
-    def eventProcess(self):
+    def eventProcess(self) -> bool:        
         return SDL_Poll()
+
     

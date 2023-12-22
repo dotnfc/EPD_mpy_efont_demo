@@ -65,6 +65,15 @@ class EpdImage(EPD):
         else:
             machine.deepsleep(microseconds)
 
+    def runable(self):
+        if sys.platform == "linux":
+            runn = self.eventProcess()
+            if runn:
+                print(f"running {runn}")
+            return not runn
+        else:
+            return True
+    
     def setColor(self, foreColor, backColor):
         '''Set image/font drawing color, and select internal working Frame Buffer.
         

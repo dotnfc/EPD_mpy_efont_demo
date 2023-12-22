@@ -130,11 +130,13 @@ EVT_BUF = {
     "EVT_DATA": (0x01 | uctypes.ARRAY, 56 | uctypes.UINT8)
 }
 
+sdl_exit_flag = False
 def SDL_Poll():
+    global sdl_exit_flag
     buf = bytearray(1 + 56)
     result = SDL_PollEvent(buf)
     if result == 0:
-        return False
+        return sdl_exit_flag
     
     header = uctypes.struct(uctypes.addressof(buf), EVT_BUF, uctypes.LITTLE_ENDIAN)
     
@@ -143,6 +145,31 @@ def SDL_Poll():
     # print(header.EVT_TYPE) 
     
     if header.EVT_TYPE == SDL_QUIT:
-        return True
+        sdl_exit_flag = True
+        return sdl_exit_flag
 
-    return False
+    return sdl_exit_flag
+
+def SDL_KeyRead(key):
+    '''Get Key State: 1 - pressed, 0 - released'''
+    
+    if SDL_Poll():
+        return 0
+    
+    if key == SDL_SCANCODE_A or key == SDL_SCANCODE_S or \
+       key == SDL_SCANCODE_D or key == SDL_SCANCODE_F:
+        p_scancodes = SDL_GetKeyboardState(0)
+        result_buffer = uctypes.bytearray_at(p_scancodes, SDL_NUM_SCANCODES)
+        if result_buffer[key]:
+            # key pressed, wait for released
+            while True:
+                
+                if SDL_Poll():
+                    return 0
+
+                p_scancodes = SDL_GetKeyboardState(0)
+                result_buffer = uctypes.bytearray_at(p_scancodes, SDL_NUM_SCANCODES)
+                if result_buffer[key] == 0:
+                    # released
+                    return 1
+    return 0

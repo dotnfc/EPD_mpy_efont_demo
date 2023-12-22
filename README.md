@@ -63,8 +63,14 @@ days 变量中，注意分隔符是制表符 '\t'。
 > tools/qweather-icons/qweather-icons-demo.html
 
 ## 页面展示
-
 <img src="image/ex10d2.jpg" />
+
+注意：
+
+    """
+    按键 A - 模拟 用户按键，可做左翻（月份 -1）
+    按键 D - 模拟 IO0，可做右翻（月份 +1）
+    """
 
 ## 参考
 

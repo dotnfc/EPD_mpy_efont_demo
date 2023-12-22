@@ -3,7 +3,6 @@
     by .NFC 2023/12/20
 """
 import time
-import json
 import urequests as requests
 from  wifi_sta_helper import wifiHelper
 import logging as log
@@ -12,6 +11,7 @@ from display3c import *
 from efont import *
 from qw_icons import *
 import ulunar, holidays, birthdays
+from .button import *
 import gc
 
 gc.enable()
@@ -56,7 +56,7 @@ class uiCalendar(object):
         '''依据地支，获取生肖的图标'''
         return zodiac_icon_fill[lunar.dizhi]
     
-    def drawTitleBar(self, month, mday, lunar):
+    def drawTitleBar(self, year, month, mday, lunar):
         '''显示页面的标题栏'''
         # 显示 月份
         self.epd.setColor(EPD_RED, EPD_WHITE)
@@ -64,15 +64,19 @@ class uiCalendar(object):
         self.epd.setColor(EPD_WHITE, EPD_RED)
         s = "%2d月" % (month)
         self.epd.drawText(4, 10, 180, 88, ALIGN_CENTER, s, 80)
-        
-        # 阴历年份/生肖 日子
         self.epd.setColor(EPD_BLACK, EPD_WHITE)
+        
+        # 阳历年份
+        s = "%s年%s月%s日" % (year, month, mday)
+        self.epd.drawText(4, 16, self.epd.WIDTH - 1, 32, ALIGN_CENTER, s, 28)
+        
+        # 阴历年份/生肖/日子
         ganzhi = lunar.getGanZhi()
         shengxiao = lunar.getZodiac()
         ymon = lunar.getMonth()
         yday = lunar.getDate()
         s = "农历 %s(%s)年 %s%s" % (ganzhi, shengxiao, ymon, yday)
-        self.epd.drawText(4, 40, self.epd.WIDTH - 1, 48, ALIGN_CENTER, s, 32)
+        self.epd.drawText(4, 50, self.epd.WIDTH - 1, 48, ALIGN_CENTER, s, 32)
         
         # 显示生肖图标
         self.epd.selectFont("icons")
@@ -187,11 +191,43 @@ class uiCalendar(object):
         wifiHelper.connect("DOTNF-HOS", "20180903")
 
         year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
-        # year, month, mday = 2023, 10, 22
+        # year, month, mday = 2024, 10, 22
         lunar = ulunar.Lunar(year, month, mday)
         
-        self.drawTitleBar(month, mday, lunar)
-        self.drawBody(year, month, mday, lunar)
+        reDraw = True
+        while self.epd.runable():
+            if reDraw:
+                self.epd.clear()
+                self.drawTitleBar(year, month, mday, lunar)
+                self.drawBody(year, month, mday, lunar)
+                self.epd.refresh()
+                reDraw = False
+            
+            if KeyA.is_pressed():
+                month = month - 1
+                if month <= 0:
+                    year = year - 1
+                    month = 12
+                if year <= 2020:
+                    year = 2020
+                    continue
+                
+                lunar = ulunar.Lunar(year, month, mday)
+                reDraw = True
+            elif KeyB.is_pressed():
+                month = month + 1
+                if month >= 13:
+                    year = year + 1
+                    month = 1
+                if year >= 2025:
+                    year = 2025
+                    continue
+                
+                lunar = ulunar.Lunar(year, month, mday)
+                reDraw = True
+            
+            if KeyA.is_holding() or KeyB.is_holding():
+                break
+            time.sleep_ms(100)
 
-        self.epd.refresh()
         self.epd.deepSleep(15000)
