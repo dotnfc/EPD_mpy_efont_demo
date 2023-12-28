@@ -155,12 +155,12 @@ class EpdImage(EPD):
         The color of the text can be defined by the optional argument but is otherwise a default value of 1.         
         All characters have dimensions of 8x8 pixels and there is currently no way to change the font.
         '''
-        self.fb.text(s, x, y, c)
+        self.fb.text(s, x, y, self.convert_color(c))
     
     def dot_hline_3c(self, x1, y1, x2, c):
         x = x1
         while x < x2:
-            self.fb.line(x, y1, x + 7, y1, c)
+            self.fb.line(x, y1, x + 7, y1, self.convert_color(c))
             x = x + 10
             
     def line_3c(self, x1, y1, x2, y2, c):
@@ -169,7 +169,7 @@ class EpdImage(EPD):
         The line method draws the line up to a second set of coordinates whereas the hline and vline methods 
         draw horizontal and vertical lines respectively up to a given length.
         '''
-        self.fb.line(x1, y1, x2, y2, c)
+        self.fb.line(x1, y1, x2, y2, self.convert_color(c))
         
     def fill_3c(self, x1, y1, x2, y2, c):
         '''
@@ -178,13 +178,13 @@ class EpdImage(EPD):
         draw horizontal and vertical lines respectively up to a given length.
         '''
         # def fill_rect(self, *args, **kwargs)
-        self.fb.line(x1, y1, x2, y2, c)
+        self.fb.line(x1, y1, x2, y2, self.convert_color(c))
         
     def rect_3c(self, x, y, w, h, c, fill=False):
         '''
         Draw a rectangle at the given location, size and color.
         '''
-        self.fb.rect(x, y, w, h, c, fill)
+        self.fb.rect(x, y, w, h, self.convert_color(c), fill)
 
     def ellipse_3c(self, x, y, xr, yr, c, fill=False):
         '''
@@ -192,4 +192,10 @@ class EpdImage(EPD):
         Radii xr and yr define the geometry; equal values cause a circle to be drawn. 
         The c parameter defines the color.
         '''
-        self.fb.ellipse(x, y, xr, yr, c, fill)
+        self.fb.ellipse(x, y, xr, yr, self.convert_color(c), fill)
+
+    def convert_color(self, c):
+        if c:
+            return self.foreColor
+        else:
+            return self.backColor

@@ -17,8 +17,8 @@ class WifiSTAHelper(object):
     def __init__(self):
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(False)
-        self.wlan.disconnect() # may not be needed
-        
+        #self.wlan.disconnect() # may not be needed
+
     def connect(self, ssid, password, timeout=7000):
         log.info(f'connecting to {ssid} ...')
         
