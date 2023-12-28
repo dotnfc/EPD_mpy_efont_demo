@@ -5,12 +5,16 @@
 import datetime
 import ulunar
 
-familyBirthdays = {
-'9': [(6, '陈立,邹武'), (27, '李四')],
-'3': [(24, '王麻子')],
-'4': [(21, '张三')],
-'11': [(5, '汤正')],
-}
+try:
+    import ex_birthdays # put this file at the root of vfs
+    familyBirthdays = ex_birthdays.ex_familyBirthdays
+except:
+    familyBirthdays = {
+        '9': [(6, '陈立,邹武'), (27, '李四')],
+        '3': [(24, '王麻子')],
+        '4': [(21, '张三')],
+        '11': [(5, '汤正')],
+    }
 
 def binary_search(sorted_data, search_number):
     left, right = 0, len(sorted_data) - 1

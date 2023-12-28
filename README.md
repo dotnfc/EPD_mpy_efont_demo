@@ -12,6 +12,9 @@
     - [2. 家人生日显示](#2-家人生日显示)
     - [3. 本工程的图标资源](#3-本工程的图标资源)
   - [页面展示](#页面展示)
+    - [天气](#天气)
+    - [日历](#日历)
+    - [4. 天气数据源](#4-天气数据源)
   - [参考](#参考)
   
 
@@ -63,14 +66,35 @@ days 变量中，注意分隔符是制表符 '\t'。
 > tools/qweather-icons/qweather-icons-demo.html
 
 ## 页面展示
+### 天气
+<img src="image/ex10d2-qw.jpg" />
+
+### 日历
 <img src="image/ex10d2.jpg" />
 
 注意：
 
-    """
     按键 A - 模拟 用户按键，可做左翻（月份 -1）
     按键 D - 模拟 IO0，可做右翻（月份 +1）
-    """
+
+### 4. 天气数据源
+代码中采用了[和风天气开发服务](https://dev.qweather.com/docs/)，使用的时候，需要注册得到一个 api key，请放到 settings.py 中。
+
+另外，为减少开发阶段的数据请求，我们可以把需要的数据通过浏览器获取到以后，放到 qweather_test.py 中。
+
+比如：
+```html
+7天天气预报
+   https://devapi.qweather.com/v7/weather/7d?location=101010100&key=APIKEY
+实时天气
+   https://devapi.qweather.com/v7/weather/now?location=101010100&key=APIKEY
+逐小时天气预报 
+   https://devapi.qweather.com/v7/weather/24h?location=101010100&key=APIKEY
+空气质量5天预报
+   https://devapi.qweather.com/v7/air/5d?location=101010100&key=APIKEY
+以及一言地址
+   https://v1.hitokoto.cn/?encode=json&min_length=1&max_length=21
+```
 
 ## 参考
 

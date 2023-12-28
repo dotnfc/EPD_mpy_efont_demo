@@ -3,7 +3,6 @@
     by .NFC 2023/12/20
 """
 import time
-import urequests as requests
 from  wifi_sta_helper import wifiHelper
 import logging as log
 import calender
@@ -12,6 +11,7 @@ from efont import *
 from qw_icons import *
 import ulunar, holidays, birthdays
 from .button import *
+from .settings import *
 import gc
 
 gc.enable()
@@ -56,7 +56,7 @@ class uiCalendar(object):
         '''依据地支，获取生肖的图标'''
         return zodiac_icon_fill[lunar.dizhi]
     
-    def drawTitleBar(self, year, month, mday, lunar):
+    def drawTitle(self, year, month, mday, lunar):
         '''显示页面的标题栏'''
         # 显示 月份
         self.epd.setColor(EPD_RED, EPD_WHITE)
@@ -187,8 +187,8 @@ class uiCalendar(object):
 
     def start(self):
         """Run the weather station display loop"""
-        log.info("uiTest Started")
-        wifiHelper.connect("DOTNF-HOS", "20180903")
+        log.info("Calendar Started")
+        wifiHelper.connect(WIFI_SSID, WIFI_PASS)
 
         year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
         # year, month, mday = 2024, 10, 22
@@ -198,7 +198,7 @@ class uiCalendar(object):
         while self.epd.runable():
             if reDraw:
                 self.epd.clear()
-                self.drawTitleBar(year, month, mday, lunar)
+                self.drawTitle(year, month, mday, lunar)
                 self.drawBody(year, month, mday, lunar)
                 self.epd.refresh()
                 reDraw = False

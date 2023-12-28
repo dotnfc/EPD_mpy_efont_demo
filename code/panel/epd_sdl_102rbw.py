@@ -29,6 +29,7 @@ class EPD(EpdSDLBase, FrameBuffer):
     BUF_SIZE = const(WIDTH * HEIGHT // 8)
     
     def __init__(self, zoom = 1):
+        self.colorful = True  # default 3-colors
         self.buf_bw = bytearray(self.BUF_SIZE)
         self.buf_rw = bytearray(self.BUF_SIZE)
         self.fb_rw = FrameBuffer(self.buf_rw, self.WIDTH, self.HEIGHT, MONO_HLSB)
@@ -36,6 +37,9 @@ class EPD(EpdSDLBase, FrameBuffer):
         EpdSDLBase.__init__(self, self.WIDTH, self.HEIGHT, zoom)
         FrameBufferEx.__init__(self, self.buf_bw, self.WIDTH, self.HEIGHT, MONO_HLSB)
     
+    def setColorful(self, mono: bool):
+        self.colorful = not mono
+        
     def init(self):
         pass
     
@@ -46,6 +50,9 @@ class EPD(EpdSDLBase, FrameBuffer):
         pass
         
     def refresh(self, buf=None, full=True):
-        self.updateSubWindow3Color(self.buf_bw, self.buf_rw, 0, 0, self.WIDTH, self.HEIGHT)
+        if self.colorful:
+            self.updateSubWindow3Color(self.buf_bw, self.buf_rw, 0, 0, self.WIDTH, self.HEIGHT)
+        else:
+            self.updateSubWindowBW(self.buf_bw, 0, 0, self.WIDTH, self.HEIGHT)
+            
         self.updateScreen()
-

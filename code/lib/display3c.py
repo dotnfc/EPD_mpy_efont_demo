@@ -32,13 +32,12 @@ class EpdImage(EPD):
         EPD.__init__(self)
         self.image = Image(self.WIDTH, self.HEIGHT)
         self.fb = self      # default fb object is black and white buffer
-        
         self.fonts = {}     # fonts loaded
         self.font = None    # font object currently selected
         
         self.foreColor = EPD_BLACK
         self.backColor = EPD_WHITE
-
+        
     def clear(self, bw = EPD_WHITE, rw = EPD_WHITE):
         if bw == EPD_WHITE:
             self.fill(RBW_WHITE)
@@ -157,7 +156,13 @@ class EpdImage(EPD):
         All characters have dimensions of 8x8 pixels and there is currently no way to change the font.
         '''
         self.fb.text(s, x, y, c)
-        
+    
+    def dot_hline_3c(self, x1, y1, x2, c):
+        x = x1
+        while x < x2:
+            self.fb.line(x, y1, x + 7, y1, c)
+            x = x + 10
+            
     def line_3c(self, x1, y1, x2, y2, c):
         '''
         Draw a line from a set of coordinates using the given color and a thickness of 1 pixel.         
