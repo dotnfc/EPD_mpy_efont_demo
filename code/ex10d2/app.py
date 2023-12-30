@@ -14,16 +14,16 @@ def main():
     
     if checkGoSetting():
         uiSettings().start()    # never return
-    
+
     try:
-        # uiCalendar().start()
+        #uiCalendar().start()
         uiWeather().start()
     except Exception as e:
         log.exception(e,'Exception in main.py')
     
         if sys.platform == 'esp32':
             machine.reset()
-        
+    
 def checkGoSetting() ->bool:
     '''按键检测，是否进设置页面'''
     if KeyA.is_pressed():
@@ -33,5 +33,18 @@ def checkGoSetting() ->bool:
     
     return False
 
+class TestWifiCreation():
+    # https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
+    from uQR import QRCode
+
+    qr = QRCode()
+    ssid, password = 'test', 'test'
+    qr.add_data('WIFI:S:{};T:WPA;P:{};H:false;;'.format(ssid, password))
+    matrix = qr.get_matrix()
+    matrix = qr.render_matrix()
+    print(matrix)
+
+        
 if __name__ == '__main__':
-    main()
+    TestWifiCreation()
+    #main()

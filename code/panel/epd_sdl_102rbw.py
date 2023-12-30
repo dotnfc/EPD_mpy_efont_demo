@@ -54,5 +54,5 @@ class EPD(EpdSDLBase, FrameBuffer):
             self.updateSubWindow3Color(self.buf_bw, self.buf_rw, 0, 0, self.WIDTH, self.HEIGHT)
         else:
             self.updateSubWindowBW(self.buf_bw, 0, 0, self.WIDTH, self.HEIGHT)
-            
+        
         self.updateScreen()

@@ -1,16 +1,15 @@
 """ WifiSTAHelper
     ESP32 WiFi STA helper
+    refer: https://docs.micropython.org/en/latest/library/network.WLAN.html
 """
 
-import sys
+import sys, time
 import logging as log
 
 try:
     import network
 except ImportError:
     import unetwork as network
-
-import time
 
 class WifiSTAHelper(object):
     
@@ -98,4 +97,14 @@ class WifiSTAHelper(object):
             
         return scan
 
+class WifiAPHelper(object):
+    
+    def __init__(self):
+        self.wlan = network.WLAN(network.AP_IF)
+        self.wlan.active(False)
+
+    def start(self, name, password):
+        self.wlan.active(True)
+        self.wlan.config(ssid='ESP-AP')
+        
 wifiHelper = WifiSTAHelper() # the connection is not active at this point
