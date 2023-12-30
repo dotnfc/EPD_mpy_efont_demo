@@ -3,19 +3,20 @@
     by .NFC 2023/12/23
 """
 import time
-import urequests as requests
+#import urequests as requests
+import requests
 from  wifi_sta_helper import wifiHelper
 import logging as log
 from display3c import *
 from efont import *
-from qw_icons import *
+from efore.qw_icons import *
+from efore.city_list import china_citys
 from .settings import *
 import datetime
-# from .qweather_api import *
-from .qweather_test import *
+#from .qw_api import *
+from .qw_api_fake import *
 import ulunar, holidays, birthdays
 from .button import *
-from city_list import china_citys
 import gc
 
 _week_day_number_cn = ("一", "二", "三", "四", "五", "六", "日")
@@ -26,7 +27,7 @@ class uiWeather(object):
     def __init__(self,**kwargs):
         self.epd = EpdImage()
         self.epd.init()
-        self.epd.clear(EPD_WHITE, EPD_WHITE)
+        self.epd.clear(EPD_WHITE, EPD_BLACK)
         self.epd.setColor(EPD_BLACK, EPD_WHITE)
 
         self.epd.loadFont("simyou")
@@ -35,10 +36,10 @@ class uiWeather(object):
         self.epd.loadFont("swissel")
         self.epd.selectFont("simyou")
         
-        self.qw_now = now()
-        self.qw_future = future()
-        self.qw_future_air = future_air()
-        self.qw_hourly = hourly()
+        self.qw_now = now(QW_API_CITY, QW_API_KEY)
+        self.qw_future = future(QW_API_CITY, QW_API_KEY)
+        self.qw_future_air = future_air(QW_API_CITY, QW_API_KEY)
+        self.qw_hourly = hourly(QW_API_CITY, QW_API_KEY)
         
     def start(self):
         """Run the weather station display loop"""
@@ -111,7 +112,7 @@ class uiWeather(object):
         sNow = "%02d:%02d" % (hour, minute)
         self.epd.drawText(324, 0, 230, 160, ALIGN_LEFT, sNow, 120)
         
-        self.epd.selectFont("icons")
+        self.epd.selectFont("icons") # 刷新图标
         self.epd.drawText(604, 10, 30, 30, ALIGN_LEFT, ICO_ARROW_REPEAT2, 24)
         
         # 当天天气图标
@@ -328,8 +329,7 @@ class uiWeather(object):
         self.draw24hHumidityChart(38, 580, x_width, y_height)
     
     def draw24hHumidityChart(self, x, y, x_width, y_height):
-        '''绘制 24 小时湿度曲线'''
-        
+        '''左侧绘制 24 小时湿度曲线'''        
         hdtL = 0
         hdtH = 100
         hdtD = hdtH - hdtL
@@ -371,9 +371,12 @@ class uiWeather(object):
             _y = yy
         
     def drawFooter(self):
-        # 定位图标
-        self.epd.setColor(EPD_WHITE, EPD_RED)
+        '''绘制底部栏'''
+        self.epd.setColor(EPD_RED, EPD_WHITE)
         self.epd.rect_3c(0, 604, 315, 639, 1, True)
+        
+        # 定位图标
+        self.epd.setColor(EPD_WHITE, EPD_RED)        
         self.epd.selectFont("icons")
         self.epd.drawText(2, 610, 40, 40, ALIGN_LEFT, ICO_GEOALT, 24)
         

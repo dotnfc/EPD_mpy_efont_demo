@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 # panel driver, based on {github}/waveshareteam/Pico_ePaper_Code/blob/main/python/Pico-ePaper-3.7.py
-# FPC Label: HINK-E075A01-A8
+# FPC Label: HINK-E102A01-A1
 # Panel    : GDEW075Z09 (960 x 640)
 # IC       : SSD1677
 # Product  : Stellar-XXXL
@@ -17,21 +17,6 @@ from board import *
 import ustruct
 
 BUSY = const(1)  # 1=busy, 0=idle
-
-# gray clear
-EPD_3IN7_lut_4Gray_GC =[
-0x2A,0x06,0x15,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#1
-0x28,0x06,0x14,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#2
-0x20,0x06,0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#3
-0x14,0x06,0x28,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#4
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#5
-0x00,0x02,0x02,0x0A,0x00,0x00,0x00,0x08,0x08,0x02,#6
-0x00,0x02,0x02,0x0A,0x00,0x00,0x00,0x00,0x00,0x00,#7
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#8
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#9
-0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,#10
-0x22,0x22,0x22,0x22,0x22
-]
 
 # gray clear
 EPD_3IN7_lut_1Gray_GC =[
@@ -97,7 +82,6 @@ class EPD(FrameBuffer):
         self.rst.init(self.rst.OUT, value=0)
         self.busy.init(self.busy.IN)
         
-        self.lut_4Gray_GC = EPD_3IN7_lut_4Gray_GC
         self.lut_1Gray_GC = EPD_3IN7_lut_1Gray_GC
         self.lut_1Gray_DU = EPD_3IN7_lut_1Gray_DU
         self.lut_1Gray_A2 = EPD_3IN7_lut_1Gray_A2
@@ -115,17 +99,14 @@ class EPD(FrameBuffer):
        
     def Load_LUT(self,lut):
         self._command(0x32)
-        for count in range(0, 105):
-            if lut == 0 :
-                self._data(self.lut_4Gray_GC[count])
-            elif lut == 1 :
-                self._data(self.lut_1Gray_GC[count])
-            elif lut == 2 :
-                self._data(self.lut_1Gray_DU[count])
-            elif lut == 3 :
-                self._data(self.lut_1Gray_A2[count])
-            else:
-                print("There is no such lut ")
+        if lut == 1 :
+            self._data(bytearray(self.lut_1Gray_GC))
+        elif lut == 2 :
+            self._data(bytearray(self.lut_1Gray_DU))
+        elif lut == 3 :
+            self._data(bytearray(self.lut_1Gray_A2))
+        else:
+            print("There is no such lut ")
 
     def _command(self, command, data=None):
 
@@ -147,85 +128,93 @@ class EPD(FrameBuffer):
             data = bytearray([data])
         self.spi.write(data)
         self.cs(1)
+                
+    def clear_screen(self):
         
-    def EPD_3IN7_4Gray_init(self):
+        self._command(0x4E)
+        self._data(0x00)
+        self._data(0x00)
+        self._command(0x4F)
+        self._data(0x00)
+        self._data(0x00)
+
+        self._command(0x24)
+        self.fill(self.white)
+        self._data(self.buffer)
+
+        self._command(0x26)
+        self.fill(self.black)
+        self._data(self.buffer)
+        
+        self.Load_LUT(1)
+
+        self._command(0x20)
+        self.wait_until_idle()
+                
+    def display(self,Image):
+
+        self._command(0x49)
+        self._data(0x00)
+        
+        self._command(0x4E)
+        self._data(0x00)
+        self._data(0x00)
+        self._command(0x4F)
+        self._data(0x00)
+        self._data(0x00)
+
+        self._command(0x24)
+        self._data(Image)
+        self.Load_LUT(1)
+        
+        self._command(0x20)
+        self.wait_until_idle()
+        
+    def display_Part(self,Image):
+
+        self._command(0x44, ustruct.pack('<HH', 0x0000, self.WIDTH -1))
+        self._command(0x45, ustruct.pack('<HH', 0x0000, self.HEIGHT -1))
+        
+        self._command(0x4E)   # SET_RAM_X_ADDRESS_COUNTER
+        self._data(0x00)
+        self._data(0x00)
+
+        self._command(0x4F)   # SET_RAM_Y_ADDRESS_COUNTER
+        self._data(0x00)
+        self._data(0x00)
+        
+        self._command(0x24)
+        self._data(Image)
+        
+        self.Load_LUT(2)
+        self._command(0x20)
+        self.wait_until_idle()
+
+    def refresh(self, buf = None, full=True):
+        '''Update screen contents.
+        
+        Args:
+            - buf: dummy, only internal buffer
+            - full: dummy, only full more
+        '''
+        if full:
+            self.display(self.buffer)
+        else:
+            self.display_Part(self.buffer)
+        
+    def power_on(self):
+        self._command(0x04)
+        self.wait_until_idle()
+        
+    def power_off(self):
+        self._command(0x02)
+        self.wait_until_idle()
     
-        self.reset()              # SWRESET
-
-        self._command(0x12)
-        sleep_ms(300)   
-
-        self._command(0x46)
-        self._data(0xF7)
-        self.wait_until_idle()
-        self._command(0x47)
-        self._data(0xF7)
-        self.wait_until_idle()
-        
-        self._command(0x01)   # setting gaet number
-        self._data(0xDF)
-        self._data(0x01)
-        self._data(0x00)
-
-        self._command(0x03)   # set gate voltage
-        self._data(0x00)
-
-        self._command(0x04)   # set source voltage
-        self._data(0x41)
-        self._data(0xA8)
-        self._data(0x32)
-
-        self._command(0x11)   # set data entry sequence
-        self._data(0x03)
-
-        self._command(0x3C)   # set border 
-        self._data(0x03)
-
-        self._command(0x0C)   # set booster strength
-        self._data(0xAE)
-        self._data(0xC7)
-        self._data(0xC3)
-        self._data(0xC0)
-        self._data(0xC0)  
-
-        self._command(0x18)   # set internal sensor on
-        self._data(0x80)
-         
-        self._command(0x2C)   # set vcom value
-        self._data(0x44)
-
-        self._command(0x37)   # set display option, these setting turn on previous function
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00) 
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x00) 
-
-        self._command(0x44)   # setting X direction start/end position of RAM
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0x17)
-        self._data(0x01)
-
-        self._command(0x45)   # setting Y direction start/end position of RAM
-        self._data(0x00)
-        self._data(0x00)
-        self._data(0xDF)
-        self._data(0x01)
-
-        self._command(0x22)   # Display Update Control 2
-        self._data(0xCF)
-
-    def EPD_3IN7_1Gray_init(self):
+    def init(self):
         self.reset()
         
         self._command(0x12)
-        sleep_ms(300)  
+        sleep_ms(30)  
         
         #self._command(0x46) # Auto Write RED RAM for Regular Pattern
         #self._data(0xF7)
@@ -234,8 +223,8 @@ class EPD(FrameBuffer):
         #self._data(0xF7)
         #self.wait_until_idle()
 
-        # setting gate number
-        self._command(0x01, ustruct.pack("<I", self.WIDTH - 1) + b'\x00')
+        # setting gate number: A0~A9: Width-1, B0/B1/B2 = 0
+        self._command(0x01, ustruct.pack("<HB", self.WIDTH - 1, 0x00))
         
         self._command(0x03)   # set gate voltage
         self._data(0x00)
@@ -276,276 +265,16 @@ class EPD(FrameBuffer):
         self._data(0xFF)
         self._data(0xFF)  
 
-        # setting X direction start/end position of RAM
-        self._command(0x44, b'\x00\x00' + ustruct.pack("<I", self.WIDTH - 1))
-        
-        # setting Y direction start/end position of RAM
-        self._command(0x45, b'\x00\x00' + ustruct.pack("<I", self.HEIGHT - 1))
+        # setting X direction start/end position of RAM: XSA = 0, XEA = WIDTH -1
+        self._command(0x44, ustruct.pack('<HH', 0x0000, self.WIDTH -1))
+
+        # setting Y direction start/end position of RAM: XSA = 0, XEA = HEIGHT -1
+        self._command(0x45, ustruct.pack('<HH', 0x0000, self.HEIGHT -1))
 
         self._command(0x22)   # Display Update Control 2
         self._data(0xCF)
         
-    def EPD_3IN7_4Gray_Clear(self):    
-        high = self.height
-        if( self.width % 8 == 0) :
-            wide =  self.width // 8
-        else :
-            wide =  self.width // 8 + 1
-
-        self._command(0x49)
-        self._data(0x00)
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-        
-        self._command(0x24)
-        for j in range(0, high):
-            for i in range(0, wide):
-                self._data(0Xff)
-        
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-         
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-        
-        self._command(0x26)
-        for j in range(0, high):
-            for i in range(0, wide):
-                self._data(0Xff)
-          
-        self.Load_LUT(0)
-        self._command(0x22)
-        self._data(0xC7)
-
-        self._command(0x20)
-        self.wait_until_idle()    
-        
-    def EPD_3IN7_1Gray_Clear(self):
-        
-        self.fill(self.white)
-
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-
-        self._command(0x24)
-        self._data(self.buffer)
-
-        self.fill(self.black)
-        self._command(0x26)
-        self._data(self.buffer)
-        
-        self.Load_LUT(1)
-
-        self._command(0x20)
-        self.wait_until_idle()
-        
-    def EPD_3IN7_4Gray_Display(self,Image):
-        
-        self._command(0x49)
-        self._data(0x00)
-
-        
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        
-        
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-        
-        self._command(0x24)
-        for i in range(0, 16800):
-            temp3=0
-            for j in range(0, 2):
-                temp1 = Image[i*2+j]
-                for k in range(0, 2):
-                    temp2 = temp1&0x03 
-                    if(temp2 == 0x03):
-                        temp3 |= 0x01   # white
-                    elif(temp2 == 0x00):
-                        temp3 |= 0x00   # black
-                    elif(temp2 == 0x02):
-                        temp3 |= 0x01   # gray1
-                    else:   # 0x01
-                        temp3 |= 0x00   # gray2
-                    temp3 <<= 1
-
-                    temp1 >>= 2
-                    temp2 = temp1&0x03 
-                    if(temp2 == 0x03):   # white
-                        temp3 |= 0x01;
-                    elif(temp2 == 0x00):   # black
-                        temp3 |= 0x00;
-                    elif(temp2 == 0x02):
-                        temp3 |= 0x01   # gray1
-                    else:   # 0x01
-                        temp3 |= 0x00   # gray2
-                    
-                    if (( j!=1 ) | ( k!=1 )):
-                        temp3 <<= 1
-
-                    temp1 >>= 2
-                    
-            self._data(temp3)
-        # new  data
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-         
-        
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-        
-        self._command(0x26)
-        for i in range(0, 16800):
-            temp3=0
-            for j in range(0, 2):
-                temp1 = Image[i*2+j]
-                for k in range(0, 2):
-                    temp2 = temp1&0x03 
-                    if(temp2 == 0x03):
-                        temp3 |= 0x01   # white
-                    elif(temp2 == 0x00):
-                        temp3 |= 0x00   # black
-                    elif(temp2 == 0x02):
-                        temp3 |= 0x00   # gray1
-                    else:   # 0x01
-                        temp3 |= 0x01   # gray2
-                    temp3 <<= 1
-
-                    temp1 >>= 2
-                    temp2 = temp1&0x03
-                    if(temp2 == 0x03):   # white
-                        temp3 |= 0x01
-                    elif(temp2 == 0x00):   # black
-                        temp3 |= 0x00
-                    elif(temp2 == 0x02):
-                        temp3 |= 0x00   # gray1
-                    else:   # 0x01
-                        temp3 |= 0x01   # gray2
-                    
-                    if (( j!=1 ) | ( k!=1 )):
-                        temp3 <<= 1
-
-                    temp1 >>= 2
-
-            self._data(temp3)
-        
-        self.Load_LUT(0)
-        
-        self._command(0x22)
-        self._data(0xC7)
-        
-        self._command(0x20)
-        
-        self.wait_until_idle()
-        
-    def EPD_3IN7_1Gray_Display(self,Image):
-        
-        high = self.height
-        if( self.width % 8 == 0) :
-            wide =  self.width // 8
-        else :
-            wide =  self.width // 8 + 1
-
-        self._command(0x49)
-        self._data(0x00)
-        
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-
-        self._command(0x24)
-        self._data(Image)
-        self.Load_LUT(1)
-        
-        self._command(0x20)
-        self.wait_until_idle()
-        
-    def EPD_3IN7_1Gray_Display_Part(self,Image):
-        
-        high = self.height
-        if( self.width % 8 == 0) :
-            wide =  self.width // 8
-        else :
-            wide =  self.width // 8 + 1
-
-        self._command(0x44, b'\x00\x00' + ustruct.pack("<I", self.WIDTH - 1))
-        
-        self._command(0x45, b'\x00\x00' + ustruct.pack("<I", self.HEIGHT - 1))
-        
-        self._command(0x4E)   # SET_RAM_X_ADDRESS_COUNTER
-        self._data(0x00)
-        self._data(0x00)
-
-        self._command(0x4F)   # SET_RAM_Y_ADDRESS_COUNTER
-        self._data(0x00)
-        self._data(0x00)
-        
-        self._command(0x24)
-        self._data(Image)
-        
-        self.Load_LUT(2)
-        self._command(0x20)
-        self.wait_until_idle()
-
-    def refresh(self, buf = None, full=True):
-        '''Update screen contents.
-        
-        Args:
-            - buf: dummy, only internal buffer
-            - full: dummy, only full more
-        '''
-        if not full:
-            return
-
-        #self.EPD_3IN7_1Gray_Display(self.buffer)
-        self.EPD_3IN7_1Gray_Display_Part(self.buffer)
-        
-    def power_on(self):
-        self._command(0x04)
-        self.wait_until_idle()
-        
-    def power_off(self):
-        self._command(0x02)
-        self.wait_until_idle()
-    
-    def init(self):
-        self.EPD_3IN7_1Gray_init()
-        
-    def init_panel(self, reset=True):
-        pass
-    
-    def init_full(self):
-        self.init_panel()
-        self.power_on()
-        
-    def init_partial(self):
-        self.init_panel()
-        self.power_on()
-        
-    def update_full(self):
-        self._command(0x12)
-        self.wait_until_idle(45000)
-
-    def update_partial(self):
-        self._command(0x12)
-        self.wait_until_idle(45000)
+        self.clear_screen()
         
     def wait_until_idle(self, timeout=10000):
         while self.busy.value() == BUSY:
@@ -558,13 +287,13 @@ class EPD(FrameBuffer):
        
     def reset(self):
         self.rst(1)
-        sleep_ms(30)
+        sleep_ms(10)
         
         self.rst(0)
-        sleep_ms(30)
+        sleep_ms(10)
 
         self.rst(1)
-        sleep_ms(30)
+        sleep_ms(10)
         
     def sleep(self):
         # self.power_off()        
@@ -582,9 +311,9 @@ def main():
     _stop = time.ticks_ms()
     print("init used: %d ms" % (_stop - _start))
 
-    _start = time.ticks_ms()
-    epd.EPD_3IN7_1Gray_Clear()
-    _stop = time.ticks_ms()
+    #_start = time.ticks_ms()
+    # epd.clear_screen()
+    #_stop = time.ticks_ms()
     print("clear used: %d ms" % (_stop - _start))
     
     epd.fill(WHITE)
@@ -608,3 +337,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

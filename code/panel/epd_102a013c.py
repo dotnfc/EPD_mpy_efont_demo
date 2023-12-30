@@ -1,6 +1,6 @@
 #-*- coding:utf-8 -*-
 # panel driver, based on GDEQ102Z90 (B/W/R) code
-# FPC Label: HINK-E075A01-A8
+# FPC Label: HINK-E102A01-A1
 # Panel    : GDEQ102Z90 (960 x 640)
 # IC       : SSD1677
 # Product  : Stellar-XXXL
@@ -80,17 +80,17 @@ class EPD(FrameBuffer):
         self._data(0xC0)
         self._data(0xC0)
         
-        # setting gate number
-        self._command(0x01, ustruct.pack("<I", self.WIDTH - 1) + b'\x00')
+        # setting gate number: A0~A9: Width-1, B0/B1/B2 = 0
+        self._command(0x01, ustruct.pack("<HB", self.WIDTH - 1, 0x00))
         
         self._command(0x11)   # set data entry sequence
         self._data(0x03)
 
-        # setting X direction start/end position of RAM
-        self._command(0x44, b'\x00\x00' + ustruct.pack("<I", self.WIDTH - 1))
-        
-        # setting Y direction start/end position of RAM
-        self._command(0x45, b'\x00\x00' + ustruct.pack("<I", self.HEIGHT - 1))
+        # setting X direction start/end position of RAM: XSA = 0, XEA = WIDTH -1
+        self._command(0x44, ustruct.pack('<HH', 0x0000, self.WIDTH -1))
+
+        # setting Y direction start/end position of RAM: XSA = 0, XEA = HEIGHT -1
+        self._command(0x45, ustruct.pack('<HH', 0x0000, self.HEIGHT -1))
 
         self._command(0x3C)   # set border 
         self._data(0x01)      # 03 - red, 01 - white

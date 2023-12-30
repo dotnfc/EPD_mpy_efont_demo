@@ -6,7 +6,7 @@
 #      see script/lunar/convert-to-binary.js
 
 import time
-from lunar_data import _lunar_data
+from efore.lunar_data import _lunar_data
 
 # 天干地支之地支速查表<=>生肖
 ZODIAC = [

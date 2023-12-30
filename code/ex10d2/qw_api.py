@@ -4,12 +4,10 @@
 '''
  
 import json, deflate
-import urequests as requests
-from .settings import *
+import requests
 
 ''' official website  https://www.qweather.com '''
 '''      dev website  https://dev.qweather.com '''
-api_key = '&key=' + QW_API_KEY
 
 url_api_weather = 'https://devapi.qweather.com/v7/weather/'
 url_api_geo = 'https://geoapi.qweather.com/v2/city/'
@@ -42,11 +40,11 @@ def requests_deflate(url):
     d = deflate.DeflateIO(r.raw, deflate.GZIP)
     return json.load(d)
 
-def get_location(api_type, city_kw='beijing') :
+def get_location(api_type, api_key, city_kw='beijing') :
     if api_type == 'top':
-        url_v2 = url_api_geo + api_type + '?range=cn' + api_key
+        url_v2 = url_api_geo + api_type + '?range=cn&key=' + api_key
     else:
-        url_v2 = url_api_geo + api_type + '?location=' + city_kw + api_key
+        url_v2 = url_api_geo + api_type + '?location=' + city_kw + "&key=" + api_key
     
     resp = requests_deflate(url_v2)
     if resp['code'] != '200':
@@ -55,8 +53,8 @@ def get_location(api_type, city_kw='beijing') :
     else:
         return resp
 
-def get_air(city_id):
-    url = url_api_air + '?location=' + city_id + api_key + '&lang=en'
+def get_air(city_id, api_key):
+    url = url_api_air + '?location=' + city_id + "&key=" + api_key + '&lang=cn'
     resp = requests_deflate(url)
     if resp['code'] != '200':
         rcode = resp['code']
@@ -64,8 +62,8 @@ def get_air(city_id):
     else:
         return resp
         
-def get(api_type, city_id):
-    url = url_api_weather + api_type + '?location=' + city_id + api_key + '&lang=en'
+def get(api_type, city_id, api_key):
+    url = url_api_weather + api_type + '?location=' + city_id + "&key=" + api_key + '&lang=cn'
     resp = requests_deflate(url)
     if resp['code'] != '200':
         rcode = resp['code']
@@ -84,7 +82,7 @@ def get_city(city_kw):
 
     return city_id, district_name, city_name, province_name, country_name
 
-def now():
+def now(city_id, api_key):
     '''实时天气 https://dev.qweather.com/docs/api/weather/weather-now/
     {
       "obsTime": "2020-06-30T21:40+08:00", 数据观测时间
@@ -103,10 +101,10 @@ def now():
       "cloud": "10", 云量 %
       "dew": "21" 露点温度
     },'''
-    result = get('now', QW_API_CITY)
+    result = get('now', city_id, api_key)
     return result['now']
 
-def future():
+def future(city_id, api_key):
     '''未来 7 天天气 https://dev.qweather.com/docs/api/weather/weather-daily-forecast/
     {
       "fxDate": "2021-11-15",  预报日期
@@ -138,10 +136,10 @@ def future():
       "uvIndex": "3" 紫外线强度指数
     },
     '''
-    result = get('7d', QW_API_CITY)
+    result = get('7d', city_id, api_key)
     return result['daily']
 
-def future_air():
+def future_air(city_id, api_key):
     '''空气质量5天预报 [...] https://dev.qweather.com/docs/api/air/air-daily-forecast/
     {
       "fxDate": "2021-02-16",
@@ -151,10 +149,10 @@ def future_air():
       "primary": "NA"
     },
     '''
-    result = get_air(QW_API_CITY)
+    result = get_air(city_id, api_key)
     return result['daily']
 
-def hourly():
+def hourly(city_id, api_key):
     '''24小时预报 [...] https://dev.qweather.com/docs/api/weather/weather-hourly-forecast/
     {
       "fxTime": "2021-02-17T05:00+08:00", 预报时间
@@ -173,12 +171,12 @@ def hourly():
       "dew": "-29"         露点温度
     },
     '''
-    result = get('24h', QW_API_CITY)
+    result = get('24h', city_id, api_key)
     return result['hourly']
 
 def yiyan() ->str:
-    r = requests.get(url_api_yiyan).json()
+    r = requests.get(url_api_yiyan)
     if r.status_code == 200:
-        return r['hitokoto']
+        return r.json()['hitokoto']
     else:
         return '...'

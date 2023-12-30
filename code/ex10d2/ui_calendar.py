@@ -8,7 +8,7 @@ import logging as log
 import calender
 from display3c import *
 from efont import *
-from qw_icons import *
+from efore.qw_icons import *
 import ulunar, holidays, birthdays
 from .button import *
 from .settings import *
