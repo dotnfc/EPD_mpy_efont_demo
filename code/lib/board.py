@@ -30,7 +30,11 @@ EPD_PIN_BUSY = Pin(47)
 
 # button
 KEY_IO0      = Pin(0)
-KEY_USER     = Pin(8)
+KEY_USER     = Pin(9)
+
+#
+USB_PWR_SENSE= Pin(8)
+NFC_PWR_SENSE= Pin(18)
 
 # battery
 BATTERY_ADC  = Pin(1)
