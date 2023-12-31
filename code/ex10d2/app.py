@@ -2,6 +2,7 @@
     Main script for EFore Demo [.NFC 2023/12/18]
 """
 import sys, machine, time
+import asyncio
 import logging as log
 from .button import *
 from .ui_calendar import uiCalendar
@@ -52,39 +53,75 @@ def checkGoSetting() ->bool:
 def webTest():
     # https://microdot.readthedocs.io/en/stable/index.html
     # https://github.com/miguelgrinberg/microdot/tree/main
-    from microdot import Microdot
+    from microdot import Microdot, send_file, redirect
+    from cors import CORS
     wwwbot = Microdot()
+    CORS(wwwbot, allowed_origins=['*'], allow_credentials=True)
     
-    html = '''<!DOCTYPE html>
-    <html>
-        <head>
-            <title>Microdot Example Page</title>
-            <meta charset="UTF-8">
-        </head>
-        <body>
-            <div>
-                <h1>Microdot Example Page</h1>
-                <p>Hello from Microdot!</p>
-                <p><a href="/shutdown">Click to shutdown the server</a></p>
-            </div>
-        </body>
-    </html>
-    '''
-
-
     @wwwbot.route('/')
-    async def hello(request):
-        return html, 200, {'Content-Type': 'text/html'}
+    def index(request):
+        return send_file('www/index.html') # , compressed=True, file_extension='.gz'
 
+    @wwwbot.route('/<path:path>')
+    def static(request, path):
+        if '..' in path:
+            # directory traversal is not allowed
+            return 'Not found', 404
+        
+        filtered = captivePortalFilter(request, path)
+        if filtered:
+            return redirect(f'http://192.168.19.43:5000')
+        return send_file('www/' + path, compressed=True, file_extension='.gz')
+    
+    @wwwbot.post('/dev/reset')
+    async def onPostDeviceReset(request):
+        asyncio.create_task(resetTask())
+        return '{"msg":"done"}'
+    
+    @wwwbot.get('/dev/info')
+    async def onGetDeviceInfo(request):
+        return 'get invoices'
+    
+    @wwwbot.get('/wifi/scan')
+    async def onGetWiFiScan(request):
+        return 'get invoices'
+    
+    @wwwbot.get('/settings')
+    async def onGetSettings(request):
+        return 'get invoices'
 
+    @wwwbot.post('/settings')
+    async def onPostSettings(request):
+        # request.json
+        return 'create an invoice'
+        
+    @wwwbot.get('/wifi')
+    async def onGetWiFiInfo(request):
+        return 'get invoices'
+    
     @wwwbot.route('/shutdown')
     async def shutdown(request):
         request.app.shutdown()
         return 'The server is shutting down...'
-
-
+       
     wwwbot.run(debug=True)
+
+async def resetTask():
+    await asyncio.sleep_ms(300)
+    if sys.platform == 'esp32':
+        machine.reset()
+    else:
+        print('sys reset')
+        
+def captivePortalFilter(request, path):
+    '''Captive Portals
+       based on https://github.com/yash-sanghvi/ESP32/blob/master/Captive_Portal/Captive_Portal.ino
+    '''
+    filtered = False
     
+
+    return filtered
+
 if __name__ == '__main__':
     #TestWifiCreation()
     main()
