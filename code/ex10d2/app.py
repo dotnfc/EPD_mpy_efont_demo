@@ -111,7 +111,6 @@ def webTest():
     
     @wwwbot.get('/settings')
     async def onGetSettings(request):
-        print("Setting")
         doc = {}
         doc["ssid"] = WIFI_SSID
         doc["passwd"] = WIFI_PASS

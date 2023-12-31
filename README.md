@@ -14,7 +14,8 @@
   - [页面展示](#页面展示)
     - [天气](#天气)
     - [日历](#日历)
-    - [4. 天气数据源](#4-天气数据源)
+  - [天气数据源](#天气数据源)
+  - [WEB 配置](#WEB 配置)
   - [参考](#参考)
   
 
@@ -39,7 +40,7 @@
 
 > EPD_mpy_efont_demo\tools\esp32_tool> pip install -r requirements txt 
 
-<img src="image/efont-tool.jpg" />
+<img src="image/efont-tool.jpg" width="400" />
 
 ## VSCode 中编辑代码
 首先需要安装 python 相关扩展，以及 'MicroPython stubs'，并建立 venv，请参考 [Using the MicroPython stubs](https://micropython-stubs.readthedocs.io/en/main/20_using.html), 以支持代码智能提示。
@@ -67,17 +68,17 @@ days 变量中，注意分隔符是制表符 '\t'。
 
 ## 页面展示
 ### 天气
-<img src="image/ex10d2-qw.jpg" />
+<img src="image/ex10d2-qw.jpg" width="400" />
 
 ### 日历
-<img src="image/ex10d2.jpg" />
+<img src="image/ex10d2.jpg" width="400" />
 
 注意：
 
     按键 A - 模拟 用户按键，可做左翻（月份 -1）
     按键 D - 模拟 IO0，可做右翻（月份 +1）
 
-### 4. 天气数据源
+## 天气数据源
 代码中采用了[和风天气开发服务](https://dev.qweather.com/docs/)，使用的时候，需要注册得到一个 api key，请放到 settings.py 中。
 
 另外，为减少开发阶段的数据请求，我们可以把需要的数据通过浏览器获取到以后，放到 qweather_test.py 中。
@@ -96,6 +97,19 @@ days 变量中，注意分隔符是制表符 '\t'。
    https://v1.hitokoto.cn/?encode=json&min_length=1&max_length=21
 ```
 
+## WEB 配置
+使用热点网络配置设备的相关信息，比如 要连接的热点，天气 API_KEY，城市；首页信息等。先上图：
+
+### 连接配置
+<img src="image/web-conn.jpg" width="400" />
+
+### 启动页配置
+<img src="image/web-home.jpg" width="400" />
+
+### 设备信息
+<img src="image/web-info.jpg" width="400" />
+
+
 ## 参考
 
  - [weather-icons](https://erikflowers.github.io/weather-icons/)
@@ -104,6 +118,7 @@ days 变量中，注意分隔符是制表符 '\t'。
  - [MicroPython Online DOC](https://docs.micropython.org/en/latest/index.html)
  - [micropython-lib](https://github.com/micropython/micropython-lib)
  - [pycopy-lib](https://github.com/pfalcon/pycopy-lib)
+ - [microdot](https://github.com/miguelgrinberg/microdot) 
  - [国家假期安排](https://github.com/LKI/chinese-calendar)
  - [Chinese zodiac sign icons] By StevyG
 
