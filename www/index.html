@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang='zh-CN'>
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <!-- meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" -->
+    <meta http-equiv="content-script-type" content="text/javascript">
+    <meta http-equiv="content-style-type" content="text/css">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/qweather-icons.css">
+    <link rel="stylesheet" type="text/css" href="/css/eforecast.css">
+    <link rel="stylesheet" href="/css/show-password-toggle.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/wifi-list.css">
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/citymap.js"></script>
+    <title>eForecast 配置</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      tabIndex = 0;
+      window.onload = function () {
+        getSettings();  // 读取设备基本配置信息
+
+        // 头部导航栏
+        const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]')
+        tabEls.forEach(function (tabEl) {
+          tabEl.addEventListener('shown.bs.tab', event => {
+            if (event.target.id == 'tab-connect') {
+              tabIndex = 0;
+            } else if (event.target.id == 'tab-others') {
+              tabIndex = 1;
+            } else if (event.target.id == 'tab-info') {
+              tabIndex = 2;
+              getDeviceInfo();
+            }
+          })
+        });
+      }
+    </script>
+</head>
+
+<body>
+    <br />
+    <ul class="nav nav-pills nav-fill gap-1 p-2 small rounded-5 shadow-sm xconents" id="pillNavTab" role="tablist"
+        width="80%">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-5 qi-ico-wificast" id="tab-connect" type="button" role="tab"
+                aria-selected="true" data-bs-toggle="tab" data-bs-target="#tabConnect" aria-controls="tabConnect">
+                连接设置</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-5 qi-ico-setting" id="tab-others" type="button" role="tab"
+                aria-selected="false" data-bs-toggle="tab" data-bs-target="#tabOthers" aria-controls="tabOthers">
+                其它配置</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-5 qi-ico-infocircle" id="tab-info" type="button" role="tab"
+                aria-selected="false" data-bs-toggle="tab" data-bs-target="#tabInfo" aria-controls="tabInfo">
+                设备信息</button>
+        </li>
+    </ul>
+
+    <br />
+    <!-- Pills content -->
+    <div class="tab-content" id="ex1-content">
+        <!------------------------------------ 连接设置 ------------------------------------>
+        <div class="tab-pane active show" role="tabpanel" id="tabConnect" aria-labelledby="tabConnect">
+
+            <!------------------ WIFI设置 ------------------>
+            <div class="box-static box-border-top padding-20" id="boxWiFi">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-primary qi-sps qi-ico-wifi3" onclick="scanWiFi();">扫描</button>
+                </div>
+                <nav class="navbar">
+                    <div class="input-group">
+                        <span class="input-group-text form-label" >WIFI 热点</span>
+                        <input type="text" id="wifi-sta-ssid" class="form-control" placeholder="SSID"
+                            aria-label="Username">
+                    </div>
+                    <br /> <br /> 
+                    <div class="input-group">
+                        <span class="input-group-text form-label">WIFI 密码</span>
+                        <input type="password" id="wifi-sta-passwd" class="form-control"
+                            placeholder="Password" aria-label="Password" name="current-password"
+                            autocomplete="current-password" spellcheck="false" autocorrect="off"
+                            autocapitalize="off" required>
+                        <button id="toggle-password" type="button" class="d-none"
+                            aria-label="Show password as plain text. Warning: this will display your password on the screen.">
+                        </button>
+                    </div>
+                </nav>
+                <!------------------ 天气API ------------------>
+                <p></p>
+                <div class="input-group">
+                    <span class="input-group-text form-label">API秘钥&nbsp;
+                        <a class="d-inline-block qi-ico-questioncircle" 
+                            data-bs-trigger="focus hover" data-bs-toggle="popover" 
+                            data-bs-content="和风天气(www.qweather.com)"></a> 
+                    </span>                    
+                    <input type="text" id="weather-key" class="form-control" placeholder="API Key"
+                        aria-label="API Key">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-group-text form-label">天气城市</span>
+                    <input type="text" id="weather-city" class="form-control" placeholder="City"
+                        aria-label="City">
+                    <div id="autocomplete-div" class="autocomplete-items"></div>
+                </div>
+                <!-- div class="form-check form-switch form-check-reverse checkbox-lg">
+                    <input class="form-check-input" type="checkbox" id="chkFP">
+                    <label class="form-check-label" for="chkFP">保存时，连接热点</label>
+                </div -->
+            </div>
+        </div>
+
+        <!------------------------------------ 其他配置 ------------------------------------>
+        <div class="tab-pane box-static box-border-top padding-30" id="tabOthers" role="tabpanel" aria-labelledby="tabOthers">
+
+            <div class="list-group" id="uipgList">
+                <!--
+                <a href="#" class="list-group-item list-group-item-action qi-sps qi-ico-calendar" data-pid="50">&nbsp;月历</a>
+                <a href="#" class="list-group-item list-group-item-action qi-sps qi-ico-clock active" data-pid="51">&nbsp;时钟</a>
+                <a href="#" class="list-group-item list-group-item-action qi-sps qi-sunny" data-pid="52">&nbsp;天气</a>
+                <a href="#" class="list-group-item list-group-item-action qi-sps qi-ico-setting" data-pid="53">&nbsp;设置</a>
+                -->
+                <p class="text-body-secondary qi-sps qi-ico-infocirclefill">请刷新</p>
+            </div>
+        </div>
+
+        <!------------------------------------ 设备信息 ------------------------------------>
+        <div class="tab-pane box-static box-border-top padding-30" id="tabInfo" role="tabpanel"
+            aria-labelledby="tabInfo">
+            <ul class="list-group custom-list-group" id="devInfoList">
+                <!--
+            <li class="list-group-item list-group-item-light">
+                <span class="title">电量: </span>
+                <span class="info">80%</span>
+            </li>
+            -->
+                <p class="text-body-secondary qi-sps qi-ico-infocirclefill">刷新中 ...</p>
+            </ul>
+            <div class="d-flex justify-content-center gap-5 d-none">
+                <button type="button" class="btn btn-primary qi-sps qi-ico-refresh" onclick="getDeviceInfo();">刷新</button>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="d-flex justify-content-center gap-5">
+        <button type="button" class="btn btn-wexin w-25 qi-sps qi-ico-save" onclick="saveSettings();">保存</button>
+        <button type="button" class="btn btn-danger w-25 qi-sps qi-ico-restart" onclick="devReset();">重启</button>
+        <!-- button type="button" class="btn btn-primary qi-sps qi-ico-refresh" onclick="weLoad();">刷新</button -->
+    </div>
+
+    <!------------------------------------ wifi 热点扫描对话框 ------------------------------------>
+    <div class="modal fade" id="dlgWifiScan" tabindex="-1" aria-labelledby="dlgWifiScanTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="dlgWifiScanTitle">周围热点</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="list-group" id="dlgWifiScanBody">
+                        <div class="wifi-component list-wifi-item" id="0">
+                            <div class="wifi-icon">
+                                <span class="base-icon qi-ico-wifiscanbars"></span>
+                                <span class="top-icon qi-ico-wifiscan3"></span>
+                            </div>
+                            <span class="text">7Days</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">关&nbsp;闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="gestureZone">
+        <br />
+        
+        <!------------------------------------ 提示框 ------------------------------------>
+        <div id="msgDiv" class="msgbox alert alert-primary alert-dismissible d-none" role="alert">
+            <span id="msgBody"><strong><span class="qi-ico-infocirclefill"></span>欢迎！</strong> 此站点用以配置你的墨水屏设备</span>
+            <!-- <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button> -->
+        </div>
+
+        <!------------------------------------ 页脚 ------------------------------------>
+        <div class="container" style="height: 200px;">
+            <footer class="py-3 my-4">
+                <ul class="nav justify-content-center border-bottom pb-3 mb-3"></ul>
+                <p class="text-center text-body-secondary">&copy; 2023 eForecast</p>
+            </footer>
+        </div>
+
+    </div>
+    <!-- https://v5.bootcss.com/docs/components/navbar/ -->
+    <script src="/js/show-password-toggle.min.js" async></script>
+    <script src="/js/msg.js" async></script>
+    <script src="/js/hammer.js"></script>
+    <script src="/js/eforecast.js"></script>
+    <script>autocomplete($("#weather-city"), china_city_list);</script>
+</body>
+
+</html>

@@ -1,0 +1,50 @@
+
+.wifi-component {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.wifi-icon {
+  font-family: 'qweather-icons';
+  position: relative;
+  margin-right: 5px;
+  width: 20px;
+  height: 20px;
+}
+
+.wifi-icon .base-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: rgb(196, 196, 196);
+}
+
+.wifi-icon .top-icon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: rgb(15, 14, 14);
+  opacity: 0.9;
+}
+
+.text {
+  position: relative;
+  top: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.list-wifi-item:first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.list-wifi-item {
+    position: relative;
+    padding: 1rem var(--bs-list-group-item-padding-x);
+    color: var(--bs-list-group-color);
+    text-decoration: none;
+    background-color: var(--bs-list-group-bg);
+    border-bottom: var(--bs-list-group-border-width) solid var(--bs-list-group-border-color);
+}

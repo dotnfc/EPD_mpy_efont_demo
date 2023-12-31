@@ -12,6 +12,7 @@ def main():
     log.setLevel(log.INFO)
     log.info("EFore Demo Started")
     
+    webTest()
     if checkGoSetting():
         uiSettings().start()    # never return
 
@@ -48,7 +49,42 @@ def checkGoSetting() ->bool:
 #     matrix = qr.render_matrix()
 #     print(matrix)
 
-        
+def webTest():
+    # https://microdot.readthedocs.io/en/stable/index.html
+    # https://github.com/miguelgrinberg/microdot/tree/main
+    from microdot import Microdot
+    wwwbot = Microdot()
+    
+    html = '''<!DOCTYPE html>
+    <html>
+        <head>
+            <title>Microdot Example Page</title>
+            <meta charset="UTF-8">
+        </head>
+        <body>
+            <div>
+                <h1>Microdot Example Page</h1>
+                <p>Hello from Microdot!</p>
+                <p><a href="/shutdown">Click to shutdown the server</a></p>
+            </div>
+        </body>
+    </html>
+    '''
+
+
+    @wwwbot.route('/')
+    async def hello(request):
+        return html, 200, {'Content-Type': 'text/html'}
+
+
+    @wwwbot.route('/shutdown')
+    async def shutdown(request):
+        request.app.shutdown()
+        return 'The server is shutting down...'
+
+
+    wwwbot.run(debug=True)
+    
 if __name__ == '__main__':
     #TestWifiCreation()
     main()

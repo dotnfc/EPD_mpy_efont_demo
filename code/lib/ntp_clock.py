@@ -10,7 +10,7 @@ the Real Time Clock.
 from machine import RTC
 from logging import logging as log
 from settings.settings import settings
-from wifi_sta_helper import connection
+from wlan_helper import connection
 from settings.time_functions import Time_Functions
 import time as time
 
