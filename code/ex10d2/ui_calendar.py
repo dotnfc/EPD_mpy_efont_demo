@@ -3,7 +3,7 @@
     by .NFC 2023/12/20
 """
 import time
-from  wifi_sta_helper import wifiHelper
+from  wlan_helper import wifiHelper
 import logging as log
 import calender
 from display3c import *
