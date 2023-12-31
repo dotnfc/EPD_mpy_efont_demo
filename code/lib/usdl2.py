@@ -133,6 +133,7 @@ EVT_BUF = {
 sdl_exit_flag = False
 def SDL_Poll():
     global sdl_exit_flag
+            
     buf = bytearray(1 + 56)
     result = SDL_PollEvent(buf)
     if result == 0:

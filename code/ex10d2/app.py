@@ -26,6 +26,10 @@ def main():
     
 def checkGoSetting() ->bool:
     '''按键检测，是否进设置页面'''
+    
+    if sys.platform == 'linux':
+        return True
+    
     if KeyA.is_pressed():
         time.sleep_ms(100)
         if KeyA.is_pressed():
@@ -33,18 +37,18 @@ def checkGoSetting() ->bool:
     
     return False
 
-class TestWifiCreation():
-    # https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
-    from uQR import QRCode
+# class TestWifiCreation():
+#     # https://github.com/zxing/zxing/wiki/Barcode-Contents#wi-fi-network-config-android-ios-11
+#     from uQR import QRCode
 
-    qr = QRCode()
-    ssid, password = 'test', 'test'
-    qr.add_data('WIFI:S:{};T:WPA;P:{};H:false;;'.format(ssid, password))
-    matrix = qr.get_matrix()
-    matrix = qr.render_matrix()
-    print(matrix)
+#     qr = QRCode()
+#     ssid, password = 'test', 'test'
+#     qr.add_data('WIFI:S:{};T:WPA;P:{};H:false;;'.format(ssid, password))
+#     matrix = qr.get_matrix()
+#     matrix = qr.render_matrix()
+#     print(matrix)
 
         
 if __name__ == '__main__':
-    TestWifiCreation()
-    #main()
+    #TestWifiCreation()
+    main()

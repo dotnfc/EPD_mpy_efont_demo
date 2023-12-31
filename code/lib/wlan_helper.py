@@ -105,6 +105,10 @@ class WifiAPHelper(object):
 
     def start(self, name, password):
         self.wlan.active(True)
-        self.wlan.config(ssid='ESP-AP')
-        
+        self.wlan.config(essid=name, password=password)
+    
+    def ip(self):
+        ip, mask, gate, dns = self.wlan.ifconfig()
+        return ip
+    
 wifiHelper = WifiSTAHelper() # the connection is not active at this point

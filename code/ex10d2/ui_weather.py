@@ -3,8 +3,11 @@
     by .NFC 2023/12/23
 """
 import time
-#import urequests as requests
-import requests
+try:
+    import urequests as requests
+except:
+    import requests
+
 from  wlan_helper import wifiHelper
 import logging as log
 from display3c import *

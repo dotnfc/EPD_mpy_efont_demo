@@ -38,8 +38,9 @@ class WLAN(object):
     def isconnected(self) -> bool:
         return True
     
-    def ifconfig(self, config: tuple) -> None:
-        pass
+    def ifconfig(self, config: tuple = None):
+        if config == None:
+            return '192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'
         
     def config(self, mac : str = None, essid : str = None, password : str = None, hidden : int = 0, channel : int = 0) -> None:
         pass

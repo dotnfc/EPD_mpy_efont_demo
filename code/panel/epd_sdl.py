@@ -41,6 +41,9 @@ class EpdSDLBase():
         self._renderer = SDL_CreateRenderer(self._window, -1, SDL_RENDERER_ACCELERATED)
         self._texture = SDL_CreateTexture(self._renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, self._w, self._h)
 
+    def isSDLWindowCreated(self):
+        return (self._window != None) and (self._renderer != None) and (self._texture != None)
+    
     async def async_refresh(self):
         ref_evt = array.array("P", [0])
         

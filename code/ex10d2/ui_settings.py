@@ -3,7 +3,7 @@
     by .NFC 2023/12/23
 """
 import time, datetime
-from  wlan_helper import wifiHelper
+import wlan_helper
 import logging as log
 from display import *
 from efont import *
@@ -29,37 +29,106 @@ class uiSettings(object):
         self.epd.selectFont("simyou")
     
     def getQRcodeImage(self, x, y, text):
-        from uQR import QRCode
-
-        qr = QRCode()
-        ssid, password = 'test', 'test'
-        qr.add_data(text)
-        matrix = qr.get_matrix()
-        # matrix = qr.render_matrix()
-        for yy in range(len(matrix)*2):
-            for xx in range(len(matrix[0])*2):
-                value = not matrix[int(yy/2)][int(xx/2)]
-                self.epd.pixel(xx + x, yy + y, value)
+        import uqr
                 
+        qr = uqr.make(text)
+        
+        w, h, data = qr.packed()
+        print(f"w {w}, h {h}")
+        #fbuf = framebuf.FrameBuffer(bytearray(data), w, h, MONO_HLSB)
+        #self.epd.blit(fbuf, x, y, w, h)
+        
+        _start = time.ticks_ms()
+        for yy in range(w * 4):
+            for xx in range(w * 4):
+                if qr.get(yy // 4, xx // 4):
+                    self.epd.pixel(xx + x, yy + y, 0)
+        _end = time.ticks_ms()
+        print(f"time used {_end - _start}ms")
+        
+    def drawQRcodeImage(self, epd, x, y, text):
+        import uqr                
+        qr = uqr.make(text)
+        
+        _start = time.ticks_ms()
+        qr.draw(epd, x, y, 4)
+        _end = time.ticks_ms()
+        print(f"time2 used {_end - _start}ms")
+        
     def start(self):
         """Run the settings loop"""
         log.info("Settings Started")
-        self.epd.drawText(10, 100, self.epd.WIDTH - 10, 24, ALIGN_CENTER, f"正在连接 {WIFI_SSID} ...")
-        self.epd.refresh(full=False)
-    
-        if wifiHelper.connect(WIFI_SSID, WIFI_PASS):
-            sStat = "已连接"
-        else:
-            sStat = "连接失败"
-        self.epd.drawText(10, 130, self.epd.WIDTH - 10, 24, ALIGN_CENTER, sStat)
-        self.epd.refresh(full=False)
         
-        self.getQRcodeImage(10, 300, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
-        self.getQRcodeImage(400, 300, f'http://192.168.9.10:8090')
+        self.AP = wlan_helper.WifiAPHelper()
+        self.AP.start(AP_NAME, AP_PASS)
         
-        self.epd.refresh(full=False)
+        self.showInformations(9090)
         
-        fbuf = framebuf.FrameBuffer(bytearray(10 * 100 * 2), 10, 100, framebuf.RGB565)
+        # self.getQRcodeImage(10, 300, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
+        # self.getQRcodeImage(500, 300, f'12345hello 你好')
         
-        while(True):
+        # self.drawQRcodeImage(self.epd, 200, 300, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
+        # self.drawQRcodeImage(self.epd, 600, 300, f'12345hello 你好')
+                        
+        while(self.epd.runable()):
             time.sleep_ms(100)
+
+        sys.exit(1)
+    
+    def hline_dots(self, x, y, width):
+        ext = 0
+        step= const(10)
+        
+        while(width > 0):
+            if width > step:
+                ext = step
+            else:
+                ext = width
+                
+            self.epd.line(x, y, x + ext, y, 0)
+            x += ext + 4
+            width -= ext + 4
+            
+    def showInformations(self, svc_port):
+        self.epd.setColor(EPD_BLACK, EPD_WHITE)
+        self.epd.selectFont("simyou")
+        
+        self.epd.clear()
+        self.epd.drawText(0, 16, self.epd.WIDTH -1, 48, ALIGN_CENTER, "配置设备", 32)
+        self.hline_dots(80, 60, 800)
+        
+        msg = f"1. 连接热点网络"
+        self.epd.drawText(100, 80, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 右侧扫码，连接到此设备的热点"
+        self.epd.drawText(100, 110, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 手工连接以下热点"
+        self.epd.drawText(100, 140, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"     名称: {AP_NAME}, 密码: {AP_PASS}"
+        self.epd.drawText(100, 170, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"     提示: 安卓系统使用'扫一扫', iOS 请使用系统相机直接扫。"
+        self.epd.drawText(100, 208, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 16)
+        
+        # self.hline_dots(180, 260, 600)
+        
+        msg = f"2. 访问配置页面"
+        self.epd.drawText(100, 290, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 右侧扫码访问"
+        self.epd.drawText(100, 320, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 手工访问 http://{self.AP.ip()}:{svc_port}"
+        self.epd.drawText(100, 350, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        
+        # AP 二维码
+        self.drawQRcodeImage(self.epd, 652, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
+        
+        # 配置页面
+        self.drawQRcodeImage(self.epd, 658, 290, f'http://{self.AP.ip()}:{svc_port}')
+        
+        self.epd.line(60, 600, 900, 600, 0)
+        
+        self.epd.drawText(100, 606, 760, 606, ALIGN_CENTER, "eForecast by .NFC, firmware version: 1.0.00", 16)
+        #self.epd.selectFont("icons")
+        #self.epd.drawText(66, 606, self.epd.WIDTH -1, 610, ALIGN_LEFT, ICO_SETTING_SOLID, 24)
+
+        self.epd.refresh(full=False)
+        
+        

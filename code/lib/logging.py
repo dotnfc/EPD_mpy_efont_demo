@@ -73,7 +73,7 @@ class Logger:
             else:
                 try:
                     from settings.settings import settings
-                    from wifi_sta_helper import connection
+                    from wlan_helper import connection
                     if connection.is_connected():
                         urequests.post(settings.log_export_url,data=json.dumps({'device_id':settings.device_id,'log':log_str}))
                 except ImportError:

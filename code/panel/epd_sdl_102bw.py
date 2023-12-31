@@ -17,7 +17,7 @@ class EPD(EpdSDLBase, FrameBuffer):
     
     # Display resolution
     WIDTH  = const(960)
-    HEIGHT = const(480)
+    HEIGHT = const(640)
     BUF_SIZE = const(WIDTH * HEIGHT // 8)
     
     def __init__(self, zoom = 1):
