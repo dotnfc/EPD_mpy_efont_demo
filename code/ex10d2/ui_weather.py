@@ -20,7 +20,6 @@ import datetime
 from .qw_api_fake import *
 import ulunar, holidays, birthdays
 from .button import *
-import gc
 
 _week_day_number_cn = ("一", "二", "三", "四", "五", "六", "日")
 _weather_chart_bar_xpos = [316, 445, 574, 703, 832]

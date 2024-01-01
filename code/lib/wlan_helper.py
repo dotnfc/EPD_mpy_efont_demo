@@ -5,6 +5,7 @@
 
 import sys, time
 import logging as log
+import uasyncio as asyncio
 
 try:
     import network
@@ -70,32 +71,26 @@ class WifiSTAHelper(object):
         else:
             return self.wlan.status()
 
-    def _scan(self):
-        scan = self.wlan.scan()
-        aps_db = []
-        aps_names = []
-        result = "Scan found: "
-        for x in range(4):
-            scan = self.wlan.scan()
-            for s in scan:
-                name = s[0].decode()
-                if name not in aps_names and name != '':
-                    aps_names.append(name)
-                    x = "000"+str(abs(s[3]))
-                    aps_db.append(x[-3:len(x)]+"/"+name) # we want to sort by db
-            result += f", {str(len(aps_db))}"
-            time.sleep(1)
-            
-        log.debug(result)
-        
-        # sort by best signal strength, lowest first
-        aps_db.sort()
-        log.debug(f"Scaned: {str(aps_db)}")
-        scan=[]
-        for l in aps_db:
-            scan.append(l.split('/')[1])
-            
-        return scan
+    async def scan(self):
+        sta = network.WLAN(network.STA_IF)
+        sta.active(True)
+        await asyncio.sleep(0.1)
+        scan_results = sta.scan()
+        wifi_list = []
+
+        for result in scan_results:
+            # (ssid, bssid, channel, RSSI, security, hidden)
+            ssid = result[0].decode('utf-8')
+            rssi = result[3]
+            auth_mode = result[4]
+
+            # 将认证模式转换为简化的形式（开放=0，其他=1）
+            simplified_auth_mode = 0 if auth_mode == 0 else 1
+
+            # 将热点信息添加到列表中
+            wifi_info = {'ssid': ssid, 'rssi': rssi, 'type': simplified_auth_mode}
+            wifi_list.append(wifi_info)
+        return wifi_list
 
 class WifiAPHelper(object):
     
@@ -105,10 +100,10 @@ class WifiAPHelper(object):
 
     def start(self, name, password):
         self.wlan.active(True)
-        self.wlan.config(essid=name, password=password)
+        self.wlan.config(essid=name, password=password, authmode=network.AUTH_WPA2_PSK)
     
     def ip(self):
         ip, mask, gate, dns = self.wlan.ifconfig()
         return ip
-    
+
 wifiHelper = WifiSTAHelper() # the connection is not active at this point
