@@ -39,23 +39,5 @@ def checkGoSetting() ->bool:
     
     return False
 
-def webTest():
-    # https://microdot.readthedocs.io/en/stable/index.html
-    # https://github.com/miguelgrinberg/microdot
-    from microdot import Microdot, send_file, redirect
-    from cors import CORS
-
-
-        
-def captivePortalFilter(request, path):
-    '''Captive Portals
-       based on https://github.com/yash-sanghvi/ESP32/blob/master/Captive_Portal/Captive_Portal.ino
-    '''
-    filtered = False
-    
-
-    return filtered
-
 if __name__ == '__main__':
-    #TestWifiCreation()
     main()
