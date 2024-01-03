@@ -5,7 +5,6 @@
 import time, gc, platform, sys
 from micropython import const
 import asyncio
-import json
 import wlan_helper
 import logging as log
 from display import *
@@ -108,6 +107,13 @@ class uiSettings(object):
         self.epd.drawText(100, 320, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 手工访问 {sUrl}"
         self.epd.drawText(100, 350, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        
+        msg = f"3. 使用配置应用进行配置（蓝牙）"
+        self.epd.drawText(100, 430, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 下载【e预报】应用，然后通过蓝牙连接设备"
+        self.epd.drawText(100, 460, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 名称：{sUrl}"
+        self.epd.drawText(100, 490, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         # AP 二维码
         self.drawQRcodeImage(self.epd, 652, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
