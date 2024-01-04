@@ -21,7 +21,7 @@ samples, guidance on mobile development, and a full API reference.
  - [Material Colors](https://api.flutter.dev/flutter/material/Colors-class.html)
  - [BLE: Nordic Uart Service](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/libraries/bluetooth_services/services/nus.html)
  - [Flutter Widgets Gallery](https://gallery.flutter.cn/)
-
+ - [Flutter: search_autocomplete](https://pub.dev/packages/search_autocomplete)
 
 <hr>
 

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT License
+//
+
 import 'package:flutter/material.dart';
 
 class PasswordTextField extends StatefulWidget {

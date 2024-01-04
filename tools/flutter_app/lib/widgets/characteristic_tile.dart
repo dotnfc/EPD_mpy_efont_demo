@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT License
+//
+
 import 'dart:async';
 import 'dart:math';
 

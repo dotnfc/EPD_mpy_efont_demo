@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT License
+//
+
 import 'package:eforecast/screens/search_city_screen.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/widgets/password_text_field.dart';

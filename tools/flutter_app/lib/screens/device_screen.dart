@@ -1,5 +1,11 @@
+// SPDX-License-Identifier: MIT License
+//
+// main page for devcie operations
+//
+
 import 'dart:async';
 
+import 'package:eforecast/utils/ble_transmit.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/widgets/device_connect_tile.dart';
 import 'package:eforecast/widgets/device_home_page_tile.dart';
@@ -24,7 +30,8 @@ class DeviceScreen extends StatefulWidget {
 
 class _DeviceScreenState extends State<DeviceScreen> {
   int? _rssi;
-  int? _mtuSize;
+  late BleTransmit bleTrx;
+
   BluetoothConnectionState _connectionState = BluetoothConnectionState.disconnected;
   List<BluetoothService> _services = [];
   bool _isDiscoveringServices = false;
@@ -36,20 +43,22 @@ class _DeviceScreenState extends State<DeviceScreen> {
   late StreamSubscription<bool> _isDisconnectingSubscription;
   late StreamSubscription<int> _mtuSubscription;
 
-  final List<int> _responseValue = [];
-  int _responseLength = 0;
-
-  BluetoothCharacteristic? _nusDeviceCharRx;
-
   @override
   void initState() {
     super.initState();
+    bleTrx = BleTransmit();
+    bleTrx.init(context);
 
     _connectionStateSubscription = widget.device.connectionState.listen((state) async {
       _connectionState = state;
       debugPrint("new state: $_connectionState");
       if (state == BluetoothConnectionState.connected) {
         _services = []; // must rediscover services
+
+        // 当设备连接后，延迟 0.2 s 去发现服务
+        Future.delayed(const Duration(milliseconds: 200), () {
+          discoverDeviceServices(); //
+        });
       }
       if (state == BluetoothConnectionState.connected && _rssi == null) {
         try {
@@ -64,10 +73,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     });
 
     _mtuSubscription = widget.device.mtu.listen((value) {
-      _mtuSize = value;
-      if (mounted) {
-        setState(() {});
-      }
+      bleTrx.setMtu(value);
     });
 
     _isConnectingSubscription = widget.device.isConnecting.listen((value) {
@@ -83,8 +89,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
         setState(() {});
       }
     });
-
-    onDiscoverServicesPressed();
   }
 
   @override
@@ -99,6 +103,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   bool get isConnected {
     return _connectionState == BluetoothConnectionState.connected;
+  }
+
+  String getBleStateString() {
+    return isConnected ? "连接" : "断开";
   }
 
   Future onConnectPressed() async {
@@ -132,7 +140,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
   }
 
-  Future onDiscoverServicesPressed() async {
+  Future discoverDeviceServices() async {
     if (mounted) {
       setState(() {
         _isDiscoveringServices = true;
@@ -151,31 +159,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
       await nusTxCharacterUUID.setNotifyValue(true);
       //StreamSubscription<List<int>> _lastValueSubscription =
       nusTxCharacterUUID.lastValueStream.listen((value) {
-        if (value.isEmpty) {
-          return;
-        }
-        if (_responseValue.isEmpty) {
-          // first frame
-          if ((value[0] == FRAME_PING) || (value[0] == FRAME_KEEP_ALIVE) || (value[0] == FRAME_ERROR)) {
-            return; // drop this invalid state frame
-          }
-          if (value[0] == FRAME_MSG) {
-            _responseValue.addAll(value.sublist(3));
-            _responseLength = (value[1] << 8) + value[2];
-          }
-        } else {
-          _responseValue.addAll(value.sublist(1)); // exluding seq
-        }
-
-        if (_responseLength <= _responseValue.length) {
-          // String strResponse = _responseValue.map((int value) => value.toRadixString(16).padLeft(2, '0')).join();
-          
-        }
+        bleTrx.recvBlock(value);
       });
 
-      _nusDeviceCharRx = nusServiceUUID.characteristics
+      BluetoothCharacteristic nusDeviceCharRx = nusServiceUUID.characteristics
           .singleWhere((item) => item.characteristicUuid == Guid(NUS_RX_CHARACTERISTIC_UUID));
-
+      bleTrx.setRxChar(nusDeviceCharRx);
       Snackbar.show(ABC.c, "Discover Services: Success", success: true);
     } catch (e) {
       Snackbar.show(ABC.c, prettyException("Discover Services Error:", e), success: false);
@@ -200,51 +189,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
-  Widget buildGetServices(BuildContext context) {
-    return IndexedStack(
-      index: (_isDiscoveringServices) ? 1 : 0,
-      children: <Widget>[
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            //shadowColor: Colors.blueAccent,
-            //elevation: 10,
-          ),
-          onPressed: onDiscoverServicesPressed,
-          child: const Text("取服务列表"),
-        ),
-        const IconButton(
-          icon: SizedBox(
-            width: 18.0,
-            height: 18.0,
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation(Colors.grey),
-            ),
-          ),
-          onPressed: null,
-        )
-      ],
-    );
-  }
-
   Widget buildDividerTile(BuildContext context) {
     return const SizedBox(height: 10);
-  }
-
-  Widget getItem(int index) {
-    return ListTile(
-      leading: Icon(QWIcons.icoWechat),
-
-      title: Text("item name"),
-      // trailing: Icon(Icons.keyboard_arrow_right_outlined),
-      onTap: () {
-        // print('index');
-      },
-      onLongPress: () {
-        // print('${item.desc}');
-      },
-    );
   }
 
   Widget buildConnectButton(BuildContext context) {
@@ -261,12 +207,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Widget showDeviceState(BuildContext context) {
     return ListTile(
-      title: Text('设备已${getBleState()}')
+      title: Text('设备已${getBleStateString()}')
     );
-  }
-
-  String getBleState() {
-    return _connectionState == BluetoothConnectionState.connected ? "连接" : "断开";
   }
 
   @override
@@ -299,93 +241,50 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
-  Future<void> devTransmit(int cla, int ins, int p1, int p2, List<int> data) async {
-    _responseValue.clear();
-    _responseLength = 0;
-
-    if (!isConnected) {
-      return;
-    }
-
-    int seq = -1;
-    List<int> frame = [0x00, 0x00];
-    List<int> apdu = [cla, ins, p1, p2, data.isEmpty ? 0 : data.length];
-
-    int tlen = 5 + data.length;
-    frame[0] = (tlen & 0xff00) >> 8;
-    frame[1] = (tlen & 0xff);
-    frame.addAll(apdu);
-    if (data.isNotEmpty) {
-      frame.addAll(data);
-    }
-
-    final chunkSize = _mtuSize! - 3;
-    final blockSize = chunkSize - 1;
-    for (var i = 0; i < frame.length; i += blockSize) {
-      final chunk = frame.sublist(i, i + blockSize > frame.length ? frame.length : i + blockSize);
-      List<int> chunkBuf = [];
-      if (seq < 0) {
-        chunkBuf.add(FRAME_MSG);
-        chunkBuf.addAll(chunk);
-        seq = 0;
-      } else {
-        chunkBuf.add(seq);
-        chunkBuf.addAll(chunk);
-        seq = seq + 1;
-        if (seq >= 0x80) {
-          seq = 0;
-        }
-      }
-
-      try {
-        await _nusDeviceCharRx?.write(chunkBuf, timeout: 1);
-      } catch (e) {
-        debugPrint('发送失败 $e.message');
-      }
-    }
+  Widget bottomButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+                                  // 获取设备当前配置
+        FloatingActionButton.extended(
+          onPressed: () {
+            
+          },
+          heroTag: 'devload',
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          icon: const Icon(QWIcons.icoRefresh),
+          label: const Text("载入"),
+          extendedPadding: const EdgeInsetsDirectional.all(10)
+        ),
+        
+        const SizedBox(width: 12), // 保存/更新配置
+        FloatingActionButton.extended(
+          onPressed: () {
+            
+          },
+          heroTag: 'devsave',
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          icon: const Icon(QWIcons.icoSave),
+          label: const Text("保存"),
+          extendedPadding: const EdgeInsetsDirectional.all(10)
+        ),
+        
+        const SizedBox(width: 12), // 重启设备
+        FloatingActionButton.extended(
+          onPressed: () {
+            bleTrx.cmdReset();
+          },
+          heroTag: 'devreset',
+          backgroundColor: Colors.red[600],
+          icon: const Icon(QWIcons.icoRestart),
+          label: const Text("重启"),
+          extendedPadding: const EdgeInsetsDirectional.all(8)
+        ),
+      ],
+    );
   }
+
 }
 
-Widget bottomButtons() {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.end,
-    children: [
-      FloatingActionButton.extended(
-        onPressed: () {
-          // 处理第一个按钮的点击事件
-        },
-        heroTag: 'devload',
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        icon: const Icon(QWIcons.icoRefresh),
-        label: const Text("载入"),
-        extendedPadding: const EdgeInsetsDirectional.all(10)
-      ),
-      
-      const SizedBox(width: 12), // 添加一些间距
-      FloatingActionButton.extended(
-        onPressed: () {
-          // 处理第二个按钮的点击事件
-        },
-        heroTag: 'devsave',
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        icon: const Icon(QWIcons.icoSave),
-        label: const Text("保存"),
-        extendedPadding: const EdgeInsetsDirectional.all(10)
-      ),
-      
-      const SizedBox(width: 12), // 添加一些间距
-      FloatingActionButton.extended(
-        onPressed: () {
-          // 处理第二个按钮的点击事件
-        },
-        heroTag: 'devreset',
-        backgroundColor: Colors.red[600],
-        icon: const Icon(QWIcons.icoRestart),
-        label: const Text("重启"),
-        extendedPadding: const EdgeInsetsDirectional.all(8)
-      ),
-    ],
-  );
-}

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT License
+//
+
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:flutter/material.dart';
 
