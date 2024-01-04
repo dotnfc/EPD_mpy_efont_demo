@@ -1,9 +1,13 @@
+// SPDX-License-Identifier: MIT License
+//
+// scan BLE devices nearby
+//
+
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'device_screen.dart';
 import '../utils/snackbar.dart';
 import '../widgets/system_device_tile.dart';
@@ -11,7 +15,7 @@ import '../widgets/scan_result_tile.dart';
 import '../utils/extra.dart';
 
 class ScanScreen extends StatefulWidget {
-  const ScanScreen({Key? key}) : super(key: key);
+  const ScanScreen({super.key});
 
   @override
   State<ScanScreen> createState() => _ScanScreenState();
@@ -19,7 +23,7 @@ class ScanScreen extends StatefulWidget {
 
 class _ScanScreenState extends State<ScanScreen> {
   List<BluetoothDevice> _systemDevices = [];
-  List<ScanResult> _scanResults = [];
+  final List<ScanResult> _scanResults = [];
   bool _isScanning = false;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
   late StreamSubscription<bool> _isScanningSubscription;
@@ -121,20 +125,22 @@ class _ScanScreenState extends State<ScanScreen> {
       return FloatingActionButton(
         onPressed: onStopPressed,
         backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
         child: const Icon(Icons.stop),
       );
     } else {
       return FloatingActionButton(
         onPressed: onScanPressed, 
         backgroundColor: Colors.lightBlue,
-        child: const Text("查找"));
+        foregroundColor: Colors.white,
+        child: Text(AppLocalizations.of(context)!.scan));
     }
   }
 
   List<Widget> _buildSystemDeviceTiles(BuildContext context) {
     return _systemDevices
         .map(
-          (d) => SystemDeviceTile(
+          (d) => ScannedDeviceTile(
             device: d,
             onOpen: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -166,7 +172,7 @@ class _ScanScreenState extends State<ScanScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: const Icon(Icons.bluetooth),
-          title: const Text('扫描 eForecast 设备'),
+          title: Text(AppLocalizations.of(context)!.searcheForecastDevice),
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
         ),

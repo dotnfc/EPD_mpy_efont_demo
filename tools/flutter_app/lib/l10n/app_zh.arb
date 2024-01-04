@@ -1,0 +1,17 @@
+{
+  "helloWorld": "你好世界！",
+
+  "scanError": "查找错误:",
+
+  "systemDevicesError": "系统设备错误:",
+
+  "startScanError": "开始查找错误:",
+
+  "stopScanError": "停止查找错误:",
+
+  "connectError": "连接错误:",
+
+  "scan": "查找",
+
+  "searcheForecastDevice": "搜寻 eForecast 设备"
+}

@@ -1,19 +1,22 @@
 import 'dart:async';
 
 import 'package:eforecast/utils/qwicons.dart';
-import 'package:eforecast/widgets/password_text_field.dart';
+import 'package:eforecast/widgets/device_connect_tile.dart';
+import 'package:eforecast/widgets/device_home_page_tile.dart';
+import 'package:eforecast/widgets/device_info_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:eforecast/l10n/l10n.dart';
 
 import '../utils/snackbar.dart';
 import '../utils/extra.dart';
 import '../utils/constants.dart';
-import '../utils/utils.dart';
 
 class DeviceScreen extends StatefulWidget {
   final BluetoothDevice device;
 
-  const DeviceScreen({Key? key, required this.device}) : super(key: key);
+  const DeviceScreen({super.key, required this.device});
 
   @override
   State<DeviceScreen> createState() => _DeviceScreenState();
@@ -38,15 +41,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   BluetoothCharacteristic? _nusDeviceCharRx;
 
-  late TextEditingController _ctrlTextAssets;
-  late TextEditingController _ctrlTextConsume;
-
   @override
   void initState() {
     super.initState();
-
-    _ctrlTextAssets = TextEditingController(text: '9999.99');
-    _ctrlTextConsume = TextEditingController(text: '100.00');
 
     _connectionStateSubscription = widget.device.connectionState.listen((state) async {
       _connectionState = state;
@@ -98,22 +95,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     _isDisconnectingSubscription.cancel();
     //_lastValueSubscription.cancel();
     super.dispose();
-  }
-
-  void onConsume() async {
-    String strTotal = _ctrlTextAssets.text;
-    String strConsume = _ctrlTextConsume.text;
-
-    List<int> total = convertIntToHexList(strTotal);
-    List<int> consume = convertIntToHexList(strConsume);
-    List<int> data = total + consume;
-
-    await devTransmit(0x00, 0xf2, 0x00, 0x03, data);
-  }
-
-  void onGetDevID() async {
-
-    await devTransmit(0x00, 0x02, 0x01, 0x00, []);
   }
 
   bool get isConnected {
@@ -251,68 +232,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return const SizedBox(height: 10);
   }
 
-  Widget buildConnectTile(BuildContext context) {
-    return Container(
-          decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 242, 242, 242),
-        ),
-        child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(children: [
-              const SizedBox(height: 6),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      shadowColor: Colors.blueAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5.0),
-                      ),
-                    ),
-                    onPressed: () {},
-                    child: const Text("WiFi 热点列表")),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _ctrlTextConsume,
-                decoration: const InputDecoration(
-                  icon: Icon(QWIcons.icoWifi3, color: Colors.green),
-                  hintText: 'WiFi 热点',
-                  labelText: '请输入热点名',
-                ),
-              ),
-              const SizedBox(height: 6),
-              PasswordTextField(
-                controller: _ctrlTextConsume,
-                icon: const Icon(Icons.lock, color: Colors.green),
-                hintText: 'WiFi 密码',
-                labelText: '热点访问密码',
-              ),
-              const SizedBox(height: 10),
-              TextField(
-                controller: _ctrlTextConsume,
-                decoration: const InputDecoration(
-                  icon: Icon(QWIcons.icoLogoCarkey, color: Colors.orangeAccent),
-                  hintText: 'API KEY',
-                  labelText: '和风天气秘钥',
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _ctrlTextConsume,
-                decoration: const InputDecoration(
-                  icon: Icon(QWIcons.icoGlobe2, color: Colors.orangeAccent),
-                  hintText: '城市编码',
-                  labelText: '请求指定城市',
-                ),
-              ),
-              const SizedBox(height: 6),
-            ])));
-  }
-
   Widget getItem(int index) {
     return ListTile(
       leading: Icon(QWIcons.icoWechat),
@@ -326,33 +245,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
         // print('${item.desc}');
       },
     );
-  }
-
-  Widget buildHomeTile(BuildContext context) {
-    return Expanded(
-        child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: const Color.fromARGB(255, 242, 242, 242),
-        ),
-        child: ListView.builder(
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            return getItem(index);
-          },
-        ) 
-      )
-    );
-  }
-
-  Widget buildInfoTile(BuildContext context) {
-    return Expanded(
-        child: Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: const Color.fromARGB(255, 242, 242, 242),
-      ),
-    ));
   }
 
   Widget buildConnectButton(BuildContext context) {
@@ -394,14 +286,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
             child: Column(
               children: <Widget>[
                 isConnected ? Container() : showDeviceState(context),
-                isConnected ? buildConnectTile(context) : Container(),
+                isConnected ? const DeviceConnectTile() : Container(),
                 isConnected ? buildDividerTile(context) : Container(),
-                isConnected ? buildHomeTile(context) : Container(),
+                isConnected ? const HomePageTile() : Container(),
                 isConnected ? buildDividerTile(context) : Container(),
-                isConnected ? buildInfoTile(context) : Container(),
+                isConnected ? const DeviceInfoTile() : Container(),
               ],
             ),
-          )),
+          ),
+          floatingActionButton: bottomButtons()
+        ),
     );
   }
 
@@ -450,4 +344,48 @@ class _DeviceScreenState extends State<DeviceScreen> {
       }
     }
   }
+}
+
+Widget bottomButtons() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.end,
+    children: [
+      FloatingActionButton.extended(
+        onPressed: () {
+          // 处理第一个按钮的点击事件
+        },
+        heroTag: 'devload',
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        icon: const Icon(QWIcons.icoRefresh),
+        label: const Text("载入"),
+        extendedPadding: const EdgeInsetsDirectional.all(10)
+      ),
+      
+      const SizedBox(width: 12), // 添加一些间距
+      FloatingActionButton.extended(
+        onPressed: () {
+          // 处理第二个按钮的点击事件
+        },
+        heroTag: 'devsave',
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+        icon: const Icon(QWIcons.icoSave),
+        label: const Text("保存"),
+        extendedPadding: const EdgeInsetsDirectional.all(10)
+      ),
+      
+      const SizedBox(width: 12), // 添加一些间距
+      FloatingActionButton.extended(
+        onPressed: () {
+          // 处理第二个按钮的点击事件
+        },
+        heroTag: 'devreset',
+        backgroundColor: Colors.red[600],
+        icon: const Icon(QWIcons.icoRestart),
+        label: const Text("重启"),
+        extendedPadding: const EdgeInsetsDirectional.all(8)
+      ),
+    ],
+  );
 }

@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'screens/bluetooth_off_screen.dart';
 import 'screens/scan_screen.dart';
 
@@ -25,7 +25,7 @@ void main() {
 // ScanScreen depending on the adapter state
 //
 class FlutterBlueApp extends StatefulWidget {
-  const FlutterBlueApp({Key? key}) : super(key: key);
+  const FlutterBlueApp({super.key});
 
   @override
   State<FlutterBlueApp> createState() => _FlutterBlueAppState();
@@ -67,6 +67,8 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
       ),
       debugShowCheckedModeBanner: false,
       color: Colors.lightBlue,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: screen,
       navigatorObservers: [BluetoothAdapterStateObserver()],
     );

@@ -1,6 +1,7 @@
-# eforecast
+# eForecast
 
-A new Flutter project.
+A Flutter project for the eForecast to config the
+hardware via BLE.
 
 ## Getting Started
 
@@ -14,3 +15,14 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Development Resource
+ - [Material, Symbols Icons](https://fonts.google.com/icons)
+ - [Material Colors](https://api.flutter.dev/flutter/material/Colors-class.html)
+ - [BLE: Nordic Uart Service](https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/libraries/bluetooth_services/services/nus.html)
+ - [Flutter Widgets Gallery](https://gallery.flutter.cn/)
+
+
+<hr>
+
+*.NFC 2024/01/01*

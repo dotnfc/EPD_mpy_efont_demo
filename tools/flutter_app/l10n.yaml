@@ -1,0 +1,7 @@
+# App Resource Bundle (.arb)
+# https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization
+# exec 'flutter gen-l10n' to generate the same files without running the app.
+
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart

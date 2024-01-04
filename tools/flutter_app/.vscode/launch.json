@@ -11,6 +11,7 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
+            "deviceId": "Windows"
             // "program": "lib/dev_main.dart",
         },
         {

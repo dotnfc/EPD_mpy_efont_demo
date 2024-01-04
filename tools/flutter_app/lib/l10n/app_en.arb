@@ -1,0 +1,41 @@
+{
+  "helloWorld": "Hello World!",
+  "@helloWorld": {
+    "description": "The conventional newborn programmer greeting"
+  },
+
+  "scanError": "Scan Error:",
+  "@scanError": {
+    "description": "scan error message"
+  },
+
+  "systemDevicesError": "System Devices Error:",
+  "@SystemDevices Error:": {
+    "description": "System Devices Error:"
+  },
+
+  "startScanError": "Start Scan Error:",
+  "@startScanError": {
+    "description": "System Devices Error:"
+  }, 
+
+  "stopScanError": "Stop Scan Error:",
+  "@SStop Scan Error": {
+    "description": "Stop Scan Error:"
+  },
+
+  "connectError": "Connect Error:",
+  "@connectError": {
+    "description": "Connect Error:"
+  },
+
+  "scan": "Scan",
+  "@scan": {
+    "description": "Scan"
+  },
+
+  "searcheForecastDevice": "Search eForecast Device",
+  "@searcheForecastDevice": {
+    "description": "Search eForecast Device"
+  }
+}

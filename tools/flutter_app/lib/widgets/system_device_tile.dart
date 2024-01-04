@@ -3,23 +3,23 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
 
-class SystemDeviceTile extends StatefulWidget {
+class ScannedDeviceTile extends StatefulWidget {
   final BluetoothDevice device;
   final VoidCallback onOpen;
   final VoidCallback onConnect;
 
-  const SystemDeviceTile({
+  const ScannedDeviceTile({
     required this.device,
     required this.onOpen,
     required this.onConnect,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  State<SystemDeviceTile> createState() => _SystemDeviceTileState();
+  State<ScannedDeviceTile> createState() => _ScannedDeviceTileState();
 }
 
-class _SystemDeviceTileState extends State<SystemDeviceTile> {
+class _ScannedDeviceTileState extends State<ScannedDeviceTile> {
   BluetoothConnectionState _connectionState = BluetoothConnectionState.disconnected;
 
   late StreamSubscription<BluetoothConnectionState> _connectionStateSubscription;
@@ -52,6 +52,14 @@ class _SystemDeviceTileState extends State<SystemDeviceTile> {
       title: Text(widget.device.platformName),
       subtitle: Text(widget.device.remoteId.toString()),
       trailing: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          shadowColor: Colors.blueAccent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
+          ),
+        ),
         onPressed: isConnected ? widget.onOpen : widget.onConnect,
         child: isConnected ? const Text('打开') : const Text('连接'),
       ),
