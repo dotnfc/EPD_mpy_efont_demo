@@ -13,6 +13,7 @@ from efore.qw_icons import *
 from .settings import *
 from .sensor import *
 from .button import *
+import devinfo
 
 
 WWW_PORT = const(80) if sys.platform == 'linux' else const(2222)
@@ -176,13 +177,7 @@ class uiSettings(object):
         @wwwbot.get('/dev/info')
         async def onGetDeviceInfo(request):
             '''获取设备信息'''
-            res = {}
-            res["平台"] = platform.platform()
-            res["内存"] = f"已用 {gc.mem_alloc()}，可用 {gc.mem_free()} (字节)"
-            res["室温"] = f"{snsTemprHumidity.getTemperature()} ℃"
-            res["湿度"] = f"{snsTemprHumidity.getHumidity()} %"
-            res["电量"] = snsBattery.getWebInfo(); 
-            return res
+            return devinfo.DeviceInfo()
         
         @wwwbot.get('/wifi/scan')
         async def onGetWiFiScan(request):
@@ -205,7 +200,7 @@ class uiSettings(object):
             #         {"name": "月历", "ico": "qi-ico-calendarmonth", "id": 2}, 
             #         {"name": "天气", "ico": "qi-ico-sunny", "id": 3}, 
             #     ]
-            doc["page_list"] = '[{"name":"首页","ico":"qi-ico-home","id":1},{"name":"月历","ico":"qi-ico-calendarmonth","id":2},{"name":"天气","ico":"qi-ico-sunny","id":3}]'
+            doc["page_list"] = '[{"name":"首页","ico":"qi-ico-home","id":1},{"name":"月历","ico":"qi-ico-calendarmonth","id":2},{"name":"天气","ico":"qi-sunny","id":3}]'
             return doc
 
         @wwwbot.post('/settings')

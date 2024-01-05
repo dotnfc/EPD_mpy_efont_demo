@@ -92,6 +92,26 @@ class WifiSTAHelper(object):
             wifi_list.append(wifi_info)
         return wifi_list
 
+    def listAP(self):
+        sta = network.WLAN(network.STA_IF)
+        sta.active(True)
+        scan_results = sta.scan()
+        wifi_list = []
+
+        for result in scan_results:
+            # (ssid, bssid, channel, RSSI, security, hidden)
+            ssid = result[0].decode('utf-8')
+            rssi = result[3]
+            auth_mode = result[4]
+
+            # 将认证模式转换为简化的形式（开放=0，其他=1）
+            simplified_auth_mode = 0 if auth_mode == 0 else 1
+
+            # 将热点信息添加到列表中
+            wifi_info = {'ssid': ssid, 'rssi': rssi, 'type': simplified_auth_mode}
+            wifi_list.append(wifi_info)
+        return wifi_list
+    
 class WifiAPHelper(object):
     
     def __init__(self):
