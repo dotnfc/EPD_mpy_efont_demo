@@ -316,3 +316,4 @@ class QWIcons {
     static const IconData zodiacGou = IconData(0xe51b,fontFamily:'qweather');
     static const IconData zodiacZhu = IconData(0xe51c,fontFamily:'qweather');
 }
+

@@ -112,7 +112,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   Future onConnectPressed() async {
     try {
       await widget.device.connectAndUpdateStream();
-      Snackbar.show(ABC.c, "Connect: Success", success: true);
+      //Snackbar.show(ABC.c, "Connect: Success", success: true);
     } catch (e) {
       if (e is FlutterBluePlusException && e.code == FbpErrorCode.connectionCanceled.index) {
         // ignore connections canceled by the user
@@ -247,9 +247,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
       children: [
                                   // 获取设备当前配置
         FloatingActionButton.extended(
-          onPressed: () {
-            
-          },
+          onPressed: () => devInfoReload(),
           heroTag: 'devload',
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
@@ -260,9 +258,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         
         const SizedBox(width: 12), // 保存/更新配置
         FloatingActionButton.extended(
-          onPressed: () {
-            
-          },
+          onPressed: () => devInfoUpdate(),
           heroTag: 'devsave',
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
@@ -286,5 +282,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
+  void devInfoReload() {
+
+  }
+
+  void devInfoUpdate() {
+    
+  }
 }
 

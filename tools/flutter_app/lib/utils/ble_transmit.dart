@@ -11,6 +11,7 @@ import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
 const int BLE_CMD_RESET = 0x10;     // 复位设备
 const int BLE_CMD_LIST_WIFI = 0x11; // 列举 WIFI 热点
 const int BLE_CMD_CONFIG = 0x12;    // 获取/设置 配置
+const int BLE_CMD_DEV_INFO = 0x15;  // 获取设备信息
 
 class BleTransmit {
   int? _mtuSize;
@@ -112,12 +113,9 @@ class BleTransmit {
 
     if (_responseLength <= _responseValue.length) {
       // String strResponse = _responseValue.map((int value) => value.toRadixString(16).padLeft(2, '0')).join();
-      try {
-        _completer?.complete();
-        debugPrint("recv done");
-      } catch (ex) {
-        debugPrint("recv done2");
-      }      
+      if (_completer != null && !_completer!.isCompleted) {
+        _completer!.complete();
+      } 
     }
   }
 
