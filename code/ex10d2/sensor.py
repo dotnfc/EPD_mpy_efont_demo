@@ -67,11 +67,14 @@ class BatterySensor(object):
 
         return self.measure_data
     
+    def getVoltageForApp(self):
+        vol = self.read()
+    
     def getWebInfo(self):
         vol = self.read()
         icon = 0
 
-        if vol >= 4.2:             icon = 10
+        if vol >= 4.2:          icon = 10
         elif vol >= 4.1:        icon = 9
         elif vol >= 4.0:        icon = 8
         elif vol >= 3.9:        icon = 7
@@ -81,7 +84,7 @@ class BatterySensor(object):
         elif vol >= 3.5:        icon = 3
         elif vol >= 3.3:        icon = 2
         elif vol >= 3.2:        icon = 1
-        elif vol < 3.2:        icon = 0
+        elif vol < 3.2:         icon = 0
 
         c = 'e' # normal
         if isUSBPowered():

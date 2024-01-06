@@ -1,5 +1,5 @@
 """
-    [eForeDemo] 天气页面测试
+    [eForeDemo] 设置页面
     by .NFC 2023/12/23
 """
 import time, gc, platform, sys
