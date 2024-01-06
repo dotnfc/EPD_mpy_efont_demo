@@ -2,6 +2,8 @@
 
 import 'dart:async';
 
+import 'package:provider/provider.dart';
+import 'package:eforecast/utils/global_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
@@ -17,7 +19,12 @@ void main() {
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
       
-  runApp(const FlutterBlueApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => GlobalConfigProvider(),
+      child: const FlutterBlueApp(),
+    ),
+  );
 }
 
 //

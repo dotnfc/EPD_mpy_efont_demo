@@ -11,8 +11,9 @@
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
-            "deviceId": "Windows"
-            // "program": "lib/dev_main.dart",
+            "deviceId": "Windows",
+            //"program": "lib/archive_main.dart"
+            //"program": "lib/provider_main.dart"
         },
         {
             "name": "flutter_app (profile mode)",

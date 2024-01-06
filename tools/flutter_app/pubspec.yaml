@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.2.2
   search_autocomplete: ^0.0.6
   archive: ^3.4.10
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:

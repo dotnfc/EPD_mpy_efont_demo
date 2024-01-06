@@ -18,6 +18,7 @@ class BleTransmit {
   
   late List<int> _responseValue;
   late int _responseLength;
+  late int _responseSeq;
   late Completer<void>? _completer;
   late BluetoothCharacteristic? _nusDeviceCharRx;
   late int _defaultTimeoutMs;
@@ -29,6 +30,7 @@ class BleTransmit {
     _mtuSize = 23;
     _defaultTimeoutMs = 2000;
 
+    _responseSeq = 0;
     _responseLength = 0;
     _responseValue = [];
     _context = context;
@@ -103,12 +105,25 @@ class BleTransmit {
       if ((data[0] == FRAME_PING) || (data[0] == FRAME_KEEP_ALIVE) || (data[0] == FRAME_ERROR)) {
         return; // drop this invalid state frame
       }
-      if (data[0] == FRAME_MSG) {
-        _responseValue.addAll(data.sublist(3));
-        _responseLength = (data[1] << 8) + data[2];
+      if (_responseLength == 0) {
+        if(data[0] == FRAME_MSG) {
+          _responseSeq = 0;
+          _responseValue.addAll(data.sublist(3));
+          _responseLength = (data[1] << 8) + data[2];
+          debugPrint('1st $data');
+        }
+        else {
+          return; // drop invalid frame
+        }
       }
     } else {
+      if (data[0] != _responseSeq) {
+        // seq is invalid, drop this frame
+        return;
+      }
+      debugPrint('nty $data}');
       _responseValue.addAll(data.sublist(1)); // exluding seq
+      _responseSeq ++;
     }
 
     if (_responseLength <= _responseValue.length) {
