@@ -34,7 +34,7 @@ class _SearchCityScreenState extends State<SearchCityScreen> {
     return 
       Scaffold(
         appBar: AppBar(
-          title: const Text('search city code'),
+          title: const Text('查找城市编码'),
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
         ),
@@ -52,7 +52,7 @@ class _SearchCityScreenState extends State<SearchCityScreen> {
           },
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
-          child: Text('Confirm')
+          child: Text('确认')
         ),
     );
   }
@@ -75,7 +75,7 @@ class _SearchCityScreenState extends State<SearchCityScreen> {
         onSearch: _cubit.search,
         onSelected: _cubit.select,
         getString: (value) => value,
-        hintText: 'City to search...',
+        hintText: '待查询的城市...',
       ),
     );
   }
