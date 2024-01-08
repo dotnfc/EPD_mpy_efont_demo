@@ -4,6 +4,7 @@
 import sys
 sys.path.extend(["/ex10d2", ""])
 
+import gc
 import deflate, io, machine
 from micropython import const
 import uasyncio as asyncio
@@ -74,13 +75,17 @@ class bleFramer(object):
         return b.getvalue()
 
     def recvFrame(self, data: bytearray):
-        if self.recv_data == None:
+        if not self.recv_done:
             if data[0] == EFC_CMD_MSG:
                 self.recv_frame_length = data[1] * 256 + data[2]
                 self.recv_data = data[3:]
+                #print(f"drcv 1 {data}")
+            else:
+                print(f"rcv error: {data}")
         else:
             # skip the seq
             self.recv_data = data[1:]
+            #print(f"drcv 2 {data}")
         
         if self.recv_data != None:
             if len(self.recv_data) >= self.recv_frame_length:
@@ -115,6 +120,7 @@ class bleFramer(object):
         self.sendResponse(connection, apdu)
     
     def sendResponse(self, connection, apdu):
+        gc.collect()
         tpdu = []
         self.reset()
         seq = -1
@@ -127,12 +133,16 @@ class bleFramer(object):
         tpdu += list(apdu)
         tpduLen = len(tpdu)    
         
+        #print(f"[f] {gc.mem_free()}")
+        
         while (tpduLen > 0):
             tsLen = self.sendBlock (connection, seq, tpdu, offset, tpduLen)
             offset  += tsLen
             tpduLen -= tsLen
             seq += 1
-    
+            #print(f"[f] {gc.mem_free()}")
+            #await asyncio.sleep_ms(10)
+            
     def getDevName(self):
         mac = bluetooth.BLE().config('mac') # (addr_type, addr)
         sid = ''.join(['{:02X}'.format(b) for b in mac[1]])
@@ -141,6 +151,7 @@ class bleFramer(object):
     def processListWifi(self, connection):
         listAP = wifiHelper.listAP()
         strAPs = json.dumps(listAP)
+        # print(f"ap =>\n{strAPs}")
         self.sendResponseSW(connection, strAPs, 0x9000)
         
     def processConfig(self, connection):
@@ -201,6 +212,7 @@ class bleFramer(object):
                     print('[d] one frame 2')
                     if self.recv_done:
                         print('[d] process command')
+                        self.recv_done = False
                         self.processEFCommand(connection)
 
         except aioble.DeviceDisconnectedError:
@@ -214,7 +226,7 @@ class bleFramer(object):
                 services=[_UART_UUID]
             )
             print("Connection from", connection.device)
-
+            self.reset();
             await self.communication_task(connection)
             await connection.disconnected()
             print('Connection closed')

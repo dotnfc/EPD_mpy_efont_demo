@@ -30,6 +30,7 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
       controller: widget.controller,
       obscureText: _obscureText, // 密码风格
       decoration: InputDecoration(
+        border: const UnderlineInputBorder(borderSide: BorderSide(width: 0.1)),
         hintText: widget.hintText,
         labelText: widget.labelText,
         icon: widget.icon,

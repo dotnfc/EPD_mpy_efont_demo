@@ -17,32 +17,32 @@ class _HomePageTileState extends State<HomePageTile> {
   @override
   void initState() {
     super.initState();
-
-    GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    
-    configProvider.addListener(() => mounted ? setState(() {}) : null);
   }
 
-  @override
-  void dispose() {
-    GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    configProvider.removeListener(() {});
-    super.dispose();
-  }
+  // @override b
+  // void dispose() {
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
+    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
+    //configProvider.addListener(() => mounted ? setState(() {}) : null);
+
     var pages = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageList;
     var current = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageNbr;
     var currentPageName = '未指定';
 
-    pages.forEach((item) {
+    for (var item in pages) {
       if (item.id == current) {
         currentPageName = item.name;
       }
-    });
+    }
 
-    return Consumer<GlobalConfigProvider>(builder: (context, value, child) {
+    return Consumer<GlobalConfigProvider>(
+      builder: (context, globalConfig, child) {
+        globalConfig.addListener(() {
+        });
       return Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
@@ -61,6 +61,7 @@ class _HomePageTileState extends State<HomePageTile> {
           )
       );
     });
+    
   }
 
   void changeHomePage(BuildContext context) {

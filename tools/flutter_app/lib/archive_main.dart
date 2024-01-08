@@ -33,7 +33,7 @@ void testRaw(List<int> data) {
     debugPrint("decompressed $inflatedDataBytes\n");
 
     // decompressed2
-    inflatedDataString = [203, 72, 205, 201, 201, 87, 40, 207, 47, 202, 73, 81, 64, 102, 3, 0]; // inflatedDataString.sublist(0, inflatedDataString.length - 2);
+    inflatedDataString = [203, 72, 205, 201, 201, 87, 40, 207, 47, 202, 73, 81, 64, 102, 3, 0];
     
     List<int> inflatedDataBytes2 = Inflate(inflatedDataString).getBytes();
     debugPrint("decompressed $inflatedDataBytes2\n");
