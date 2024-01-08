@@ -1,0 +1,43 @@
+
+void testRaw(List<int> data) {
+    // compress
+    List<int> inflatedDataString = Deflate(data, level: Deflate.BEST_COMPRESSION).getBytes();
+    debugPrint("compress $inflatedDataString\n");
+
+    // decompressed
+    List<int> inflatedDataBytes = Inflate(inflatedDataString).getBytes();
+    debugPrint("decompressed $inflatedDataBytes\n");
+
+    // decompressed2
+    inflatedDataString = [203, 72, 205, 201, 201, 87, 40, 207, 47, 202, 73, 81, 64, 102, 3, 0];
+    
+    List<int> inflatedDataBytes2 = Inflate(inflatedDataString).getBytes();
+    debugPrint("decompressed $inflatedDataBytes2\n");
+
+    Uint8List bytes = Uint8List.fromList(inflatedDataBytes2);
+    String string = String.fromCharCodes(bytes);
+    debugPrint(string);
+}
+
+
+def decompress(data, *args):
+    '''decompress data
+    sdat = decompress(zip, deflate.RAW)
+    '''
+    buf = io.BytesIO(data)
+    with deflate.DeflateIO(buf, *args) as g:
+        return g.read()
+
+def compress(data, *args):
+    '''compress data
+    sdat = 'hello world hello world '
+    zip = compress(sdat, deflate.RAW)
+    s = ', '.join(f'{byte}' for byte in zip)
+    '''
+    b = io.BytesIO()
+    with deflate.DeflateIO(b, *args) as g:
+        g.write(data)
+    return b.getvalue()
+        
+---------------------------------------------------------------------------
+.NFC 2024/01/08
