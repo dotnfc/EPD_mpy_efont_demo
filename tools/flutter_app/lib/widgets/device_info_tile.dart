@@ -79,7 +79,7 @@ class _DeviceInfoTileState extends State<DeviceInfoTile> {
 class BottomSheetContent extends StatelessWidget {
   final String strDevInfo;
 
-  BottomSheetContent(this.strDevInfo);
+  const BottomSheetContent(this.strDevInfo, {super.key});
 
   //
   @override
@@ -102,7 +102,7 @@ class BottomSheetContent extends StatelessWidget {
           SizedBox(
             height: 50,
             child: Stack(children: [
-              Center(
+              const Center(
                 child: Text("设备信息",
                     textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)
                 ),
@@ -121,7 +121,7 @@ class BottomSheetContent extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: DataTable(
               headingRowHeight: 0,
-              columns: [
+              columns: const [
                 DataColumn(label: Text("dummy")),
                 DataColumn(label: Text('值')),
               ],

@@ -36,6 +36,12 @@ class BleTransmit {
     _context = context;
   }
 
+  void reset() {
+    _responseSeq = 0;
+    _responseLength = 0;
+    _responseValue = [];
+  }
+
   void setRxChar(BluetoothCharacteristic characteristic) {
     _nusDeviceCharRx = characteristic;
   }
@@ -121,7 +127,7 @@ class BleTransmit {
         // seq is invalid, drop this frame
         return;
       }
-      debugPrint('nty $data}');
+      debugPrint('nty $data');
       _responseValue.addAll(data.sublist(1)); // exluding seq
       _responseSeq ++;
     }

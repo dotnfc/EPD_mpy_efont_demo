@@ -2,6 +2,8 @@
 //
 
 import 'package:eforecast/screens/search_city_screen.dart';
+import 'package:eforecast/screens/wifi_list_screen.dart';
+import 'package:eforecast/utils/ble_transmit.dart';
 import 'package:eforecast/utils/global_data.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/widgets/password_text_field.dart';
@@ -11,7 +13,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class DeviceConnectTile extends StatefulWidget {
-  const DeviceConnectTile({super.key});
+  final BleTransmit bleTrx;
+  const DeviceConnectTile({super.key, required this.bleTrx});
 
   @override
   State<DeviceConnectTile> createState() => _DeviceConnectTileState();
@@ -23,20 +26,21 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
   void initState() {
     super.initState();
 
-    GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    
-    configProvider.addListener(() => mounted ? setState(() {}) : null);
+    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);    
+    //configProvider.addListener(() => mounted ? setState(() {}) : null);
   }
-  
-  @override
-  void dispose() {
-    GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    configProvider.removeListener(() {});
-    super.dispose();
-  }
+
+  //@override
+  //void dispose() {
+    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
+    //configProvider.removeListener(() {});
+    //super.dispose();
+  //}
 
   @override
   Widget build(BuildContext context) {
+    //var prov = context.watch<GlobalConfigProvider>();
+
     // WiFi Connection
     TextEditingController ctrlTextSSID = TextEditingController(
       text: Provider.of<GlobalConfigProvider>(context, listen: true).config.ssid,
@@ -67,12 +71,13 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                 TextField(
                   controller: ctrlTextSSID,
                   decoration: InputDecoration(
+                    border: const UnderlineInputBorder(borderSide: BorderSide(width: 0.1)),
                     icon: const Icon(QWIcons.icoWifi3, color: Colors.green),
                     hintText: 'WiFi 热点',
                     labelText: '请输入热点名',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.chevron_right_outlined),
-                      onPressed: () { devListWifi(); }
+                      onPressed: () { devListWifi(widget.bleTrx); }
                     ),
                   ),
                 ),
@@ -87,6 +92,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                 TextField(
                   controller: ctrlTextQWKey,
                   decoration: InputDecoration(
+                    border: const UnderlineInputBorder(borderSide: BorderSide(width: 0.1)),
                     icon: const Icon(QWIcons.icoLogoCarkey, color: Colors.orangeAccent),
                     hintText: 'API KEY',
                     labelText: '和风天气秘钥',
@@ -101,6 +107,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                   readOnly: true,
                   controller: ctrlTextQWCity,
                   decoration: InputDecoration(
+                    border: const UnderlineInputBorder(borderSide: BorderSide(width: 0.1)),
                     icon: const Icon(QWIcons.icoGlobe2, color: Colors.orangeAccent),
                     hintText: '城市编码',
                     labelText: '指定城市',
@@ -119,13 +126,18 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
   }
   
   // get a list of local wifi hot-spots
-  void devListWifi() {
-    showModalBottomSheet<void>(
-      context: context,
-      builder: (context) {
-        return const BottomSheetWiFiList();
-      },
+  void devListWifi(BleTransmit bleTrx) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WiFiListPage(bleTrx:bleTrx),
+      ),
     );
+
+    if (result != null) {
+      Provider.of<GlobalConfigProvider>(context, listen: false).config.ssid = result;
+      Provider.of<GlobalConfigProvider>(context, listen: false).notifyOnly();
+    }
   }
 
   // search a city to request weather information
@@ -176,84 +188,3 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
 }
 
 
-//----------------------------------------------------------------
-// A popup window to show WiFi List Selection
-class BottomSheetWiFiList extends StatefulWidget {
-
-  const BottomSheetWiFiList({super.key});
-
-  @override
-  State<BottomSheetWiFiList> createState() => _BottomSheetWiFiList();
-}
-
-class _BottomSheetWiFiList extends State<BottomSheetWiFiList> {
-  late int _current;
-  late bool _isScanning;
-
-  @override
-  void initState() {
-    super.initState();
-    
-    _current = 0;
-    _isScanning = true;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    _current = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageNbr;
-    var pages = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageList;
-
-    return SizedBox(
-      height: 240,
-      child: Column(
-        children: [
-          SizedBox(
-            height: 40,
-            child: Stack(
-              children: [
-                Center(
-                  child: Text(
-                    _isScanning ? "正在搜索热点": '可用 WiFi 热点',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  }
-                ),
-              ]
-            )
-          ),
-          const Divider(thickness: 1),
-          Expanded(
-            child: ListView.separated(
-              separatorBuilder: (context, index) {
-                return const Divider(height: 1, color: Colors.grey);
-              },
-              itemCount: pages.length,
-              itemBuilder: (context, index) {
-                return InkWell(
-                  onTap: () {
-                    Provider.of<GlobalConfigProvider>(context, listen: false).config.pageNbr = pages[index].id;
-                    _current = pages[index].id;
-                    setState(() { });
-
-                    Provider.of<GlobalConfigProvider>(context, listen: false).notifyOnly();
-                  },
-                  highlightColor: Colors.blueGrey,
-                  child: ListTile(
-                      visualDensity: const VisualDensity(vertical: -4),
-                      title: Text(pages[index].name),
-                      trailing: (pages[index].id == _current) ? const Icon(Icons.done) : null),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

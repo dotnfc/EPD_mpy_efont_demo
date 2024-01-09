@@ -119,6 +119,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   Future onConnectPressed() async {
     try {
       await widget.device.connectAndUpdateStream();
+      bleTrx.reset();
       //Snackbar.show(ABC.c, "Connect: Success", success: true);
     } catch (e) {
       if (e is FlutterBluePlusException && e.code == FbpErrorCode.connectionCanceled.index) {
@@ -155,8 +156,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     }
     try {
       _services = await widget.device.discoverServices(subscribeToServicesChanged: false);
-      //showVendorInfo(_services);
-      //showBatteryInfo(_services);
 
       final nusServiceUUID = _services.singleWhere((item) => item.serviceUuid == Guid(NUS_SERVICE_UUID));
 
@@ -235,7 +234,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
             child: Column(
               children: <Widget>[
                 isConnected ? Container() : showDeviceState(context),
-                isConnected ? const DeviceConnectTile() : Container(),
+                isConnected ? DeviceConnectTile(bleTrx: bleTrx) : Container(),
                 isConnected ? buildDividerTile(context) : Container(),
                 isConnected ? const HomePageTile() : Container(),
                 isConnected ? buildDividerTile(context) : Container(),
