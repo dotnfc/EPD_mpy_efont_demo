@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
+
 // It is essentially a stream but:
 //  1. we cache the latestValue of the stream
 //  2. the "latestValue" is re-emitted whenever the stream is listened to
@@ -96,4 +98,12 @@ List<int> convertIntToHexList(String sVal) {
   }
 
   return hexList;
+}
+
+void debugLongPrint(String str) {
+  while (str.length > 128) {
+    debugPrint(str.substring(0, 128));
+    str = str.substring(128);
+  }
+  debugPrint(str);
 }

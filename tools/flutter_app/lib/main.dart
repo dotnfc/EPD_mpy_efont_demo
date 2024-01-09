@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:provider/provider.dart';
-import 'package:eforecast/utils/global_data.dart';
+import 'package:eforecast/data/global_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';

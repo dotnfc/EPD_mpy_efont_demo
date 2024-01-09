@@ -7,8 +7,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:eforecast/utils/ble_transmit.dart';
-import 'package:eforecast/utils/global_data.dart';
+import 'package:eforecast/data/global_data.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/widgets/device_connect_tile.dart';
 import 'package:eforecast/widgets/device_home_page_tile.dart';
@@ -36,11 +37,8 @@ class _DeviceScreenState extends State<DeviceScreen> {
   int? _rssi;
   late BleTransmit bleTrx;
 
-  late GlobalConfigProvider _configProvider;
-
   BluetoothConnectionState _connectionState = BluetoothConnectionState.disconnected;
   List<BluetoothService> _services = [];
-  bool _isDiscoveringServices = false;
   bool _isConnecting = false;
   bool _isDisconnecting = false;
 
@@ -54,7 +52,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     super.initState();
     bleTrx = BleTransmit();
     bleTrx.init(context);
-    _configProvider = GlobalConfigProvider();
 
     _connectionStateSubscription = widget.device.connectionState.listen((state) async {
       _connectionState = state;
@@ -74,6 +71,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           Snackbar.show(ABC.c, prettyException("readRssi Error:", e), success: false);
         }
       }
+
       if (mounted) {
         setState(() {});
       }
@@ -104,7 +102,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     _mtuSubscription.cancel();
     _isConnectingSubscription.cancel();
     _isDisconnectingSubscription.cancel();
-    //_lastValueSubscription.cancel();
     super.dispose();
   }
 
@@ -118,8 +115,11 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
   Future onConnectPressed() async {
     try {
+      Provider.of<GlobalConfigProvider>(context, listen: false).reset();
+
       await widget.device.connectAndUpdateStream();
       bleTrx.reset();
+      
       //Snackbar.show(ABC.c, "Connect: Success", success: true);
     } catch (e) {
       if (e is FlutterBluePlusException && e.code == FbpErrorCode.connectionCanceled.index) {
@@ -143,17 +143,15 @@ class _DeviceScreenState extends State<DeviceScreen> {
     try {
       await widget.device.disconnectAndUpdateStream();
       Snackbar.show(ABC.c, "Disconnect: Success", success: true);
+      setState(() {
+        _connectionState = BluetoothConnectionState.disconnected;
+      });
     } catch (e) {
       Snackbar.show(ABC.c, prettyException("Disconnect Error:", e), success: false);
     }
   }
 
   Future discoverDeviceServices() async {
-    if (mounted) {
-      setState(() {
-        _isDiscoveringServices = true;
-      });
-    }
     try {
       _services = await widget.device.discoverServices(subscribeToServicesChanged: false);
 
@@ -174,11 +172,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
       Snackbar.show(ABC.c, "Discover Services: Success", success: true);
     } catch (e) {
       Snackbar.show(ABC.c, prettyException("Discover Services Error:", e), success: false);
-    }
-    if (mounted) {
-      setState(() {
-        _isDiscoveringServices = false;
-      });
     }
   }
 
@@ -253,7 +246,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
       children: [
                                   // 获取设备当前配置
         FloatingActionButton.extended(
-          onPressed: () => devInfoReload(),
+          onPressed: () => devCfgReload(),
           heroTag: 'devload',
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
@@ -264,7 +257,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         
         const SizedBox(width: 12), // 保存/更新配置
         FloatingActionButton.extended(
-          onPressed: () => devInfoUpdate(),
+          onPressed: () => devCfgUpdate(),
           heroTag: 'devsave',
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
@@ -288,16 +281,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
-  void devInfoReload() {
+  // 从设备获取配置，刷新界面
+  void devCfgReload() {
     bleTrx.transceive(0, BLE_CMD_CONFIG, 0, 0, null)
       .whenComplete(() {
         if (bleTrx.getRApduSW() == 0x9000) {
 
           try {
             var listData = bleTrx.getRApduData();
-            Uint8List bytes = Uint8List.fromList(listData);
+            Uint8List compressed = Uint8List.fromList(listData);
+            final bytes = Inflate(compressed).getBytes();
 
             String jsonString = utf8.decode(bytes);
+
             Map<String, dynamic> devCfg = json.decode(jsonString);
             GlobalConfig newConfig = GlobalConfig.fromJson(devCfg);
 
@@ -320,14 +316,33 @@ class _DeviceScreenState extends State<DeviceScreen> {
       })
       .timeout(const Duration(milliseconds: 2000), onTimeout: (){
         Snackbar.show(ABC.c, "设备未响应", success: false);
-        debugPrint("cfg timeout");
       });
   }
 
-  void devInfoUpdate() {
-    setState(() {
-              
-        });
+  // 将当前配置，更新到设备
+  void devCfgUpdate() {
+    GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
+    String cfg = json.encode(configProvider.config);
+    Uint8List u8List = Uint8List.fromList(utf8.encode(cfg));
+
+    final compressed = Deflate(u8List).getBytes();
+    bleTrx.transceive(0, BLE_CMD_CONFIG, 0, 0, compressed)
+      .whenComplete(() {
+        if (bleTrx.getRApduSW() == 0x9000) {         
+          Snackbar.show(ABC.c, "更新配置成功", success: true);          
+        }
+        else {
+          String strSW = '0x${bleTrx.getRApduSW().toRadixString(16).toUpperCase()}';
+          Snackbar.show(ABC.c, "更新配置失败: $strSW", success: false);
+        }
+      })
+      .onError((error, stackTrace) {
+        Snackbar.show(ABC.c, prettyException("更新配置失败:", error), success: false);
+        debugPrint(error.toString());
+      })
+      .timeout(const Duration(milliseconds: 2000), onTimeout: (){
+        Snackbar.show(ABC.c, "设备未响应", success: false);
+      });
   }
 }
 

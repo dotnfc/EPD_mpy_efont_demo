@@ -43,7 +43,20 @@ class WifiSTAHelper(object):
             log.info("Unable to connect")
             self.wlan.active(False)
             return False
-                        
+    
+    def test_connect(self, ssid, password, disconn = True, timeout=8000) ->bool:
+        if self.isconnected():
+            self.wlan.disconnect()
+        
+        result = self.connect(ssid, password, timeout)
+        
+        if disconn:
+            if self.isconnected():
+                self.wlan.disconnect()
+            self.wlan.active(False)
+        
+        return result
+    
     def isconnected(self):
         if not self.wlan:
             return False
@@ -127,3 +140,4 @@ class WifiAPHelper(object):
         return ip
 
 wifiHelper = WifiSTAHelper() # the connection is not active at this point
+

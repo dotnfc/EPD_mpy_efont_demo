@@ -1,16 +1,21 @@
 // SPDX-License-Identifier: MIT License
 //
 
+import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:eforecast/screens/search_city_screen.dart';
 import 'package:eforecast/screens/wifi_list_screen.dart';
 import 'package:eforecast/utils/ble_transmit.dart';
-import 'package:eforecast/utils/global_data.dart';
+import 'package:eforecast/data/global_data.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/widgets/password_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_material_symbols/flutter_material_symbols.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/snackbar.dart';
 
 class DeviceConnectTile extends StatefulWidget {
   final BleTransmit bleTrx;
@@ -25,36 +30,26 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
   @override
   void initState() {
     super.initState();
-
-    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);    
-    //configProvider.addListener(() => mounted ? setState(() {}) : null);
   }
-
-  //@override
-  //void dispose() {
-    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    //configProvider.removeListener(() {});
-    //super.dispose();
-  //}
 
   @override
   Widget build(BuildContext context) {
-    //var prov = context.watch<GlobalConfigProvider>();
+    var prov = context.watch<GlobalConfigProvider>();
 
     // WiFi Connection
     TextEditingController ctrlTextSSID = TextEditingController(
-      text: Provider.of<GlobalConfigProvider>(context, listen: true).config.ssid,
+      text: prov.config.ssid,
     );
     TextEditingController ctrlTextPass = TextEditingController(
-      text: Provider.of<GlobalConfigProvider>(context, listen: true).config.passwd,
+      text: prov.config.passwd,
     );
 
     // Weather API
     TextEditingController ctrlTextQWKey = TextEditingController(
-      text: Provider.of<GlobalConfigProvider>(context, listen: true).config.weKey,
+      text: prov.config.weKey,
     );
     TextEditingController ctrlTextQWCity = TextEditingController(
-      text: Provider.of<GlobalConfigProvider>(context, listen: true).config.weCity,
+      text: prov.config.weCity,
     );
 
     return Consumer<GlobalConfigProvider>(builder: (context, value, child) { 
@@ -80,6 +75,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       onPressed: () { devListWifi(widget.bleTrx); }
                     ),
                   ),
+                  onChanged: (value) => { prov.config.ssid = value }
                 ),
                 const SizedBox(height: 6),
                 PasswordTextField(
@@ -87,8 +83,9 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                   icon: const Icon(MaterialSymbols.lock, fill: 0, weight: 200, color: Colors.green),
                   hintText: 'WiFi 密码',
                   labelText: '热点访问密码',
+                  onChanged: (value) => { prov.config.passwd = value }
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 6),
                 TextField(
                   controller: ctrlTextQWKey,
                   decoration: InputDecoration(
@@ -101,6 +98,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       onPressed: () { qwApiKeyTip(context); }
                     ),
                   ),
+                  onChanged: (value) => { prov.config.weKey = value }
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -116,8 +114,30 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       onPressed: () { searchCity(context, ctrlTextQWCity.text); }
                     ),
                   ),
+                  onChanged: (value) => { prov.config.weCity = value }
                 ),
                 const SizedBox(height: 6),
+                ListTile(
+                  title: const Text("测试连接"),
+                  contentPadding: const EdgeInsets.all(0),
+                  visualDensity: const VisualDensity(vertical: -4),
+                  leading: const Icon(Icons.checklist_outlined, color: Colors.blue),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) => debugPrint("selected $value"),
+                    itemBuilder: (context) => <PopupMenuItem<String>>[
+                      PopupMenuItem<String>(
+                        value: "menuTestWiFi",
+                        child: const Text("测试 WiFi 热点"),
+                        onTap: () =>testWifiConnect(context),
+                      ),
+                      PopupMenuItem<String>(
+                        value: "menuTestQW",
+                        child: const Text("测试天气服务"),
+                        onTap: () =>testQWService(context),
+                      ),
+                    ]
+                  )
+                )
               ]
             )
           )
@@ -125,6 +145,80 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
     });
   }
   
+  // 执行热点连接测试
+  void testWifiConnect(BuildContext context) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
+    if (prov.config.ssid.isEmpty || prov.config.passwd.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        Snackbar.show(ABC.c, "请指定热点名和密码后再试", success: false);
+        return;
+      }
+    }
+
+    Map<String, dynamic> reqData = {
+        'ssid': prov.config.ssid,
+        'password': prov.config.passwd,
+      };
+      
+    String jsString = jsonEncode(reqData);
+    List<int> listData = utf8.encode(jsString);
+
+    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_WIFI, 0, listData).whenComplete(() {
+      if (widget.bleTrx.getRApduSW() == 0x9000) {
+          showResultMessage(context, "热点连接成功", true);
+      } else {
+        String strSW = '0x${widget.bleTrx.getRApduSW().toRadixString(16).toUpperCase()}';
+        showResultMessage(context, "热点连接失败 $strSW", false);
+      }
+    }).onError((error, stackTrace) {
+      showResultMessage(context, "连接热点出现错误", false);
+    }).timeout(const Duration(milliseconds: 10000), onTimeout: () {
+      showResultMessage(context, "设备未响应", false);
+    });
+  }
+
+  // 连接天气服务测试
+  void testQWService(BuildContext context) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+    var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
+    if (prov.config.weKey.isEmpty || prov.config.weCity.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        Snackbar.show(ABC.c, "请指定天气服务信息后再试", success: false);
+        return;
+      }
+    }
+
+    Map<String, dynamic> reqData = {
+        'key': prov.config.weKey,
+        'city': prov.config.weCity,
+      };
+      
+    String jsString = jsonEncode(reqData);
+    List<int> listData = utf8.encode(jsString);
+
+    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_QWSVC, 0, listData).whenComplete(() {
+      if (widget.bleTrx.getRApduSW() == 0x9000) {
+          showResultMessage(context, "天气服务测试通过", true);
+      } else {
+        String strSW = '0x${widget.bleTrx.getRApduSW().toRadixString(16).toUpperCase()}';
+        showResultMessage(context, "天气服务测试失败 $strSW", false);
+      }
+    }).onError((error, stackTrace) {
+      showResultMessage(context, "出错了", false);
+    }).timeout(const Duration(milliseconds: 5000), onTimeout: () {
+      showResultMessage(context, "设备未响应", false);
+    });
+  }
+  
+  void showResultMessage(BuildContext context, String message, bool status) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    Snackbar.show(ABC.c, message, success: status);
+  }
+
   // get a list of local wifi hot-spots
   void devListWifi(BleTransmit bleTrx) async {
     final result = await Navigator.push(

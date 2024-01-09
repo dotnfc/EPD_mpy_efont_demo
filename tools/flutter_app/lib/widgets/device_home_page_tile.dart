@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT License
 //
 
-import 'package:eforecast/utils/global_data.dart';
+import 'package:eforecast/data/global_data.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,8 +26,6 @@ class _HomePageTileState extends State<HomePageTile> {
 
   @override
   Widget build(BuildContext context) {
-    //GlobalConfigProvider configProvider = Provider.of<GlobalConfigProvider>(context, listen: false);
-    //configProvider.addListener(() => mounted ? setState(() {}) : null);
 
     var pages = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageList;
     var current = Provider.of<GlobalConfigProvider>(context, listen: true).config.pageNbr;

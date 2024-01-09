@@ -12,6 +12,10 @@ const int BLE_CMD_RESET = 0x10;     // 复位设备
 const int BLE_CMD_LIST_WIFI = 0x11; // 列举 WIFI 热点
 const int BLE_CMD_CONFIG = 0x12;    // 获取/设置 配置
 const int BLE_CMD_DEV_INFO = 0x15;  // 获取设备信息
+const int BLE_CMD_DEV_TEST = 0x16;  // 测试连接功能
+
+const int BLE_CMD_DEV_TEST_WIFI = 1;  // {"ssid": "xxx", "password": "zzz"}
+const int BLE_CMD_DEV_TEST_QWSVC = 2; // {"key": "xxx", "city": "zzz"}
 
 class BleTransmit {
   int? _mtuSize;
@@ -22,7 +26,6 @@ class BleTransmit {
   late Completer<void>? _completer;
   late BluetoothCharacteristic? _nusDeviceCharRx;
   late int _defaultTimeoutMs;
-  late BuildContext _context;
 
   void init(BuildContext context) {
     _completer = null;
@@ -33,7 +36,6 @@ class BleTransmit {
     _responseSeq = 0;
     _responseLength = 0;
     _responseValue = [];
-    _context = context;
   }
 
   void reset() {
@@ -60,7 +62,8 @@ class BleTransmit {
   Future<bool> send(List<int> apduHead, List<int>? apduData) async {
     int seq = -1;
     List<int> frame = [0x00, 0x00];
-    
+    reset();
+
     _completer = Completer<void>();
     _responseValue.clear();
     _responseLength = 0;
@@ -86,12 +89,13 @@ class BleTransmit {
         chunkBuf.add(seq);
         chunkBuf.addAll(chunk);
         seq = seq + 1;
-        if (seq >= 0x80) {
+        if (seq > 0x80) {
           seq = 0;
         }
       }
 
       try {
+        debugPrint("-> $chunkBuf");
         await _nusDeviceCharRx?.write(chunkBuf, timeout: 1);
       } catch (e) {
         debugPrint('ble send failed: $e.message');
@@ -113,10 +117,10 @@ class BleTransmit {
       }
       if (_responseLength == 0) {
         if(data[0] == FRAME_MSG) {
+          debugPrint('<- $data');
           _responseSeq = 0;
           _responseValue.addAll(data.sublist(3));
           _responseLength = (data[1] << 8) + data[2];
-          debugPrint('1st $data');
         }
         else {
           return; // drop invalid frame
@@ -127,7 +131,7 @@ class BleTransmit {
         // seq is invalid, drop this frame
         return;
       }
-      debugPrint('nty $data');
+      debugPrint('<- $data');
       _responseValue.addAll(data.sublist(1)); // exluding seq
       _responseSeq ++;
     }

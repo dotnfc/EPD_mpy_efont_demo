@@ -3,6 +3,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+/* represents data
+ {
+    "we_city": "101010100", 
+    "passwd": "20241212", 
+    "ssid": "DOTNFC-HOS", 
+    "page_nbr": 1, 
+    "page_list": [
+      {"name": "设置", "ico": "qi-ico-home", "id": 1}, 
+      {"name": "月历", "ico": "qi-ico-calendarmonth", "id": 2}, 
+      {"name": "天气", "ico": "qi-sunny", "id": 3}
+    ], 
+    "we_key": "6d76a5bd96da4eada10fbf19c7077fbb"}
+*/
 class PageItem {
   String name;
   String ico;
@@ -59,6 +72,16 @@ class GlobalConfig {
     );
   }
 
+  Map<String, dynamic> toJson() {
+    return {
+      'we_city': weCity,
+      'passwd': passwd,
+      'ssid': ssid,
+      'page_nbr': pageNbr,
+      'we_key': weKey,
+    };
+  }
+
   // 默认构造函数，所有数据为空或0
   GlobalConfig.empty()
       : weCity = '',
@@ -78,13 +101,17 @@ class GlobalConfigProvider with ChangeNotifier {
 
   set config(GlobalConfig newConfig) {
     _config = newConfig;
-    // 通知监听器配置已更改
     notifyListeners();
   }
 
   void notifyOnly() {
     notifyListeners();
   }
+
+  void reset() {
+    _config = GlobalConfig.empty();
+  }
+
   void updateConfig(GlobalConfig newConfig) {
     config = newConfig;
   }

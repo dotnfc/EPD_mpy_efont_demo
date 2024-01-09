@@ -8,13 +8,15 @@ class PasswordTextField extends StatefulWidget {
   final String hintText;
   final Icon icon;
   final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
 
   const PasswordTextField({
     super.key,
     required this.controller,
     required this.icon, 
     required this.hintText, 
-    required this.labelText
+    required this.labelText,
+    required this.onChanged
   });
 
   @override
@@ -45,6 +47,7 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
           },
         ),
       ),
+      onChanged:(value) => { widget.onChanged!(value)},
     );
   }
 }

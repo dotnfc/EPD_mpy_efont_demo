@@ -4,8 +4,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:eforecast/utils/ble_transmit.dart';
-import 'package:eforecast/utils/global_data.dart';
+import 'package:eforecast/data/global_data.dart';
 import 'package:eforecast/utils/qwicons.dart';
 import 'package:eforecast/utils/snackbar.dart';
 import 'package:flutter/material.dart';
@@ -45,8 +46,8 @@ class _DeviceInfoTileState extends State<DeviceInfoTile> {
       if (widget.bleTrx.getRApduSW() == 0x9000) {
         try {
           var listData = widget.bleTrx.getRApduData();
-          Uint8List bytes = Uint8List.fromList(listData);
-
+          Uint8List compressed = Uint8List.fromList(listData);
+          final bytes = Inflate(compressed).getBytes();
           String strDevInfo = utf8.decode(bytes);
           showDeviceInfoTable(strDevInfo);
         } catch (ex) {

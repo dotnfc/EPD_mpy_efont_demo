@@ -40,6 +40,15 @@ def requests_deflate(url):
     d = deflate.DeflateIO(r.raw, deflate.GZIP)
     return json.load(d)
 
+def test_api(key, city_id):
+    url_v2 = url_api_geo + 'lookup?location=' + city_id + "&key=" + key
+    resp = requests_deflate(url_v2)
+    if resp['code'] != '200':
+        rcode = resp['code']
+        return False
+    else:
+        return True
+    
 def get_location(api_type, api_key, city_kw='beijing') :
     if api_type == 'top':
         url_v2 = url_api_geo + api_type + '?range=cn&key=' + api_key
@@ -70,7 +79,7 @@ def get(api_type, city_id, api_key):
         raise RuntimeError(f'QW request failed {api_code(rcode)}')
     else:
         return resp
-
+    
 def get_city(city_kw):
     city = get_location('lookup', city_kw)['location'][0]
     
@@ -180,3 +189,4 @@ def yiyan() ->str:
         return r.json()['hitokoto']
     else:
         return '...'
+
