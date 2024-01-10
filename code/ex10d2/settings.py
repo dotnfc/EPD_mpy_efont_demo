@@ -4,17 +4,17 @@ import io, json, deflate
 try:
     with open("efore.json", 'r') as file:
         config_data = json.load(file)
-        print("Configuration data:", config_data)
+        #print("Configuration data:", config_data)
         
-    HOME_PAGE = int(config_data['page'])
+    HOME_PAGE = int(config_data['page_nbr'])
         
     # QWeather API Key, get it from: https://dev.qweather.com/
-    QW_API_KEY = config_data['qw_key']
-    QW_API_CITY = config_data['qw_city']
+    QW_API_KEY = config_data['we_key']
+    QW_API_CITY = config_data['we_city']
     
     # WiFi access info
-    WIFI_SSID = config_data['wifi_ssid']
-    WIFI_PASS = config_data['wifi_pass']
+    WIFI_SSID = config_data['ssid']
+    WIFI_PASS = config_data['passwd']
 
     # AP-IF
     AP_NAME = config_data['ap_name']
@@ -59,14 +59,17 @@ def cfgGet(forWeb: bool = True) -> dict:
     return doc
 
 def cfgSet(newCfg) -> bool:
-    '''Web/App更新配置信息'''
+    '''Web/App设置配置信息'''
     WIFI_SSID = newCfg["ssid"]
     WIFI_PASS = newCfg["passwd"]
 
     QW_API_KEY = newCfg["we_key"]
     QW_API_CITY = newCfg["we_city"]
     HOME_PAGE = newCfg["page_nbr"]
-
+    
+    newCfg['ap_name'] = AP_NAME
+    newCfg['ap_pass'] = AP_PASS
+    
     try:
         with open("efore.json", 'w') as file:
             json.dump(newCfg, file)
@@ -74,3 +77,4 @@ def cfgSet(newCfg) -> bool:
         return False
     
     return True
+

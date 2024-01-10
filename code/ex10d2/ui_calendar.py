@@ -10,8 +10,8 @@ from display3c import *
 from efont import *
 from efore.qw_icons import *
 import ulunar, holidays, birthdays
-from .button import *
-from .settings import *
+from button import *
+from settings import *
 
 week_day_number_cn = ("日", "一", "二", "三", "四", "五", "六")
 zodiac_icon_line = (ZODIAC_SHU, ZODIAC_NIU, ZODIAC_HU, ZODIAC_TU, ZODIAC_LONG, ZODIAC_SHE, 

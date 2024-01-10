@@ -10,12 +10,16 @@ import logging as log
 from display import *
 from efont import *
 from efore.qw_icons import *
-from .settings import *
-from .sensor import *
-from .button import *
-import devinfo, ble
+from settings import *
+from sensor import *
+from button import *
+import devinfo
 
-
+if sys.platform == 'linux':
+    import ble_fake as ble
+else:
+    import ble
+    
 WWW_PORT = const(80) if sys.platform == 'linux' else const(2222)
 
 class uiSettings(object):

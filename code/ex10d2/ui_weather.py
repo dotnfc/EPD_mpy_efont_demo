@@ -14,12 +14,12 @@ from display3c import *
 from efont import *
 from efore.qw_icons import *
 from efore.city_list import china_citys
-from .settings import *
+from settings import *
 import datetime
 #from .qw_api import *
-from .qw_api_fake import *
+from qw_api_fake import *
 import ulunar, holidays, birthdays
-from .button import *
+from button import *
 
 _week_day_number_cn = ("一", "二", "三", "四", "五", "六", "日")
 _weather_chart_bar_xpos = [316, 445, 574, 703, 832]
