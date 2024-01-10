@@ -92,6 +92,8 @@ class BleTransmit {
         if (seq > 0x80) {
           seq = 0;
         }
+
+        await Future.delayed(const Duration(milliseconds: 60));
       }
 
       try {
