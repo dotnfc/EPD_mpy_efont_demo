@@ -3,12 +3,12 @@
 """
 import sys, machine, time
 import logging as log
-from .button import *
-from .ui_calendar import uiCalendar
-from .ui_weather import uiWeather
-from .ui_settings import uiSettings
-from .sensor import *
-from .settings import *
+from button import *
+from ui_calendar import uiCalendar
+from ui_weather import uiWeather
+from ui_settings import uiSettings
+# from sensor import *
+import settings
 
 def main():
     log.setLevel(log.INFO)
@@ -18,8 +18,13 @@ def main():
         uiSettings().start()    # never return
 
     try:
-        #uiCalendar().start()
-        uiWeather().start()
+        if settings.HOME_PAGE == 2:
+            uiCalendar().start()
+        elif settings.HOME_PAGE == 3:
+            uiWeather().start()
+        else:
+            uiSettings().start()    # never return
+            
     except Exception as e:
         log.exception(e,'Exception in main.py')
     

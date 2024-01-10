@@ -13,7 +13,7 @@ from efore.qw_icons import *
 from .settings import *
 from .sensor import *
 from .button import *
-import devinfo
+import devinfo, ble
 
 
 WWW_PORT = const(80) if sys.platform == 'linux' else const(2222)
@@ -113,7 +113,7 @@ class uiSettings(object):
         self.epd.drawText(100, 430, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 下载【e预报】应用，然后通过蓝牙连接设备"
         self.epd.drawText(100, 460, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
-        msg = f"   - 名称：{sUrl}"
+        msg = f"   - 名称：{ble.getBleDevName()}"
         self.epd.drawText(100, 490, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         # AP 二维码
@@ -133,12 +133,11 @@ class uiSettings(object):
     # refer https://microdot.readthedocs.io/en/stable/index.html
     def runWebServer(self):
         
-        from microdot import Microdot, send_file, redirect
-        from cors import CORS
+        from microdot import Microdot, send_file, cors, redirect
 
         snsTemprHumidity.read()
         wwwbot = Microdot()
-        CORS(wwwbot, allowed_origins=['*'], allow_credentials=True)
+        cors.CORS(wwwbot, allowed_origins=['*'], allow_credentials=True)
         
         @wwwbot.route('/')
         def index(request):

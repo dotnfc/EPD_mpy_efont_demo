@@ -82,7 +82,7 @@ class bleFramer(object):
             self.recv_frame_length = data[1] * 256 + data[2]
             self.recv_data = data[3:]
             self.recv_seq = 0
-                #print(f"drcv 1 {data}")
+            #print(f"drcv 1 {data}")
         elif data[0] > 0x80:
             print(f"rcv error: {data}")
         else:
@@ -91,9 +91,11 @@ class bleFramer(object):
             self.recv_seq = self.recv_seq + 1
             if self.recv_seq > 0x80:
                 self.recv_seq = 0
-
-            self.recv_data = self.recv_data + data[1:]
-            #print(f"drcv 2 {data}")
+            
+            if self.recv_data is not None:
+                self.recv_data = self.recv_data + data[1:]
+            else:
+                print(f"xrcv 2 {data}")
         
         if self.recv_data != None:
             if len(self.recv_data) >= self.recv_frame_length:
@@ -154,11 +156,6 @@ class bleFramer(object):
             seq += 1
             #print(f"[f] {gc.mem_free()}")
             #await asyncio.sleep_ms(10)
-            
-    def getDevName(self):
-        mac = bluetooth.BLE().config('mac') # (addr_type, addr)
-        sid = ''.join(['{:02X}'.format(b) for b in mac[1]])
-        return f"eFore-{sid}"
 
     def processListWifi(self, connection):
         '''扫热点命令处理'''
@@ -184,7 +181,10 @@ class bleFramer(object):
                 sjson = cdat.decode('utf-8')
                 params = json.loads(sjson)
                 print(f"cfg =>\n{params}")
-                self.sendResponse(connection, [0x90, 0x00])
+                if settings.cfgSet(params):
+                    self.sendResponse(connection, [0x90, 0x00])
+                else:
+                    self.sendResponse(connection, [0x6A, 0x81])
             except Exception as e:
                 self.sendResponse(connection, [0x6A, 0x80]) # wrong data
             
@@ -286,7 +286,7 @@ class bleFramer(object):
         while True:
             connection = await aioble.advertise(
                 _ADV_INTERVAL_MS,
-                name = self.getDevName(),
+                name = getBleDevName(),
                 services=[_UART_UUID]
             )
             print("Connection from", connection.device)
@@ -294,6 +294,14 @@ class bleFramer(object):
             await self.communication_task(connection)
             await connection.disconnected()
             print('Connection closed')
+
+def getBleDevName():
+    if sys.platform == 'linux':
+        sid = "023178205809"
+    else:
+        mac = bluetooth.BLE().config('mac') # (addr_type, addr)
+        sid = ''.join(['{:02X}'.format(b) for b in mac[1]])
+    return f"eFore-{sid}"
 
 # Run both tasks.
 async def ble_app():
@@ -303,7 +311,4 @@ async def ble_app():
 
 if __name__ == '__main__':
     asyncio.run(ble_app())
-
-
-
 

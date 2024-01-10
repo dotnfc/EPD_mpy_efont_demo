@@ -58,4 +58,19 @@ def cfgGet(forWeb: bool = True) -> dict:
     doc["page_list"] = json.dumps(UI_PAGES)
     return doc
 
+def cfgSet(newCfg) -> bool:
+    '''Web/App更新配置信息'''
+    WIFI_SSID = newCfg["ssid"]
+    WIFI_PASS = newCfg["passwd"]
 
+    QW_API_KEY = newCfg["we_key"]
+    QW_API_CITY = newCfg["we_city"]
+    HOME_PAGE = newCfg["page_nbr"]
+
+    try:
+        with open("efore.json", 'w') as file:
+            json.dump(newCfg, file)
+    except:
+        return False
+    
+    return True
