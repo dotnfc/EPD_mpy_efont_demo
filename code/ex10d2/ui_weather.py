@@ -16,10 +16,11 @@ from efore.qw_icons import *
 from efore.city_list import china_citys
 from settings import *
 import datetime
-#from .qw_api import *
+#from qw_api import *
 from qw_api_fake import *
 import ulunar, holidays, birthdays
 from button import *
+import ntp_clock
 
 _week_day_number_cn = ("一", "二", "三", "四", "五", "六", "日")
 _weather_chart_bar_xpos = [316, 445, 574, 703, 832]
@@ -47,6 +48,7 @@ class uiWeather(object):
         """Run the weather station display loop"""
         log.info("Weather Started")
         wifiHelper.connect(WIFI_SSID, WIFI_PASS)
+        ntp_clock.ntp_sync_via_wifi(TIME_ZONE_GMT8)
         
         year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
         # year, month, mday = 2024, 10, 22
@@ -60,7 +62,7 @@ class uiWeather(object):
         self.epd.refresh()
         print("refresh done")
                 
-        self.epd.deepSleep(15000)
+        self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
 
     def drawLines(self):
         self.epd.setColor(EPD_RED, EPD_WHITE)

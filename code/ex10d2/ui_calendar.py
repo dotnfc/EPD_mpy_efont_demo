@@ -185,7 +185,7 @@ class uiCalendar(object):
     def start(self):
         """Run the weather station display loop"""
         log.info("Calendar Started")
-        wifiHelper.connect(WIFI_SSID, WIFI_PASS)
+        #wifiHelper.connect(WIFI_SSID, WIFI_PASS)
 
         year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
         # year, month, mday = 2024, 10, 22
@@ -194,10 +194,11 @@ class uiCalendar(object):
         reDraw = True
         while self.epd.runable():
             if reDraw:
+                # self.epd.init() # if refresh multi times, uncomment this line.
                 self.epd.clear()
                 self.drawTitle(year, month, mday, lunar)
                 self.drawBody(year, month, mday, lunar)
-                self.epd.refresh()
+                self.epd.refresh() # this will do deep-sleep. use init() to refresh again.
                 reDraw = False
             
             if KeyA.is_pressed():
@@ -227,4 +228,5 @@ class uiCalendar(object):
                 break
             time.sleep_ms(100)
 
-        self.epd.deepSleep(15000)
+        self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
+

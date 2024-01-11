@@ -73,6 +73,9 @@ class EPD(FrameBuffer):
         self.cs(1)
     
     def init_3c(self):
+        self._command(0x12)   # sw reset
+        self.wait_until_idle(3000)
+        
         self._command(0x0C)   # set booster strength
         self._data(0xAE)
         self._data(0xC7)

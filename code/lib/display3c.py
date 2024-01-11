@@ -71,7 +71,7 @@ class EpdImage(EPD):
                 print(f"running {runn}")
             return not runn
         else:
-            return True
+            return False # in hardware, we just refresh ui and do deep sleep
     
     def setColor(self, foreColor, backColor):
         '''Set image/font drawing color, and select internal working Frame Buffer.
