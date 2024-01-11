@@ -26,7 +26,8 @@ class DeviceConnectTile extends StatefulWidget {
 }
 
 class _DeviceConnectTileState extends State<DeviceConnectTile> {
-  
+  bool _testing = false;
+
   @override
   void initState() {
     super.initState();
@@ -137,7 +138,10 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       ),
                     ]
                   )
-                )
+                ),
+                _testing ? const LinearProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ) : Container()
               ]
             )
           )
@@ -147,6 +151,12 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
   
   // 执行热点连接测试
   void testWifiConnect(BuildContext context) {
+    if (mounted) {
+      setState(() {
+        _testing = true;
+      });
+    }
+
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
     if (prov.config.ssid.isEmpty || prov.config.passwd.isEmpty) {
@@ -165,7 +175,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
     String jsString = jsonEncode(reqData);
     List<int> listData = utf8.encode(jsString);
 
-    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_WIFI, 0, listData).whenComplete(() {
+    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_WIFI, 0, listData).then((result) {
       if (widget.bleTrx.getRApduSW() == 0x9000) {
           showResultMessage(context, "热点连接成功", true);
       } else {
@@ -176,11 +186,23 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
       showResultMessage(context, "连接热点出现错误", false);
     }).timeout(const Duration(milliseconds: 10000), onTimeout: () {
       showResultMessage(context, "设备未响应", false);
+    }).whenComplete(() {
+      if (mounted) {
+        setState(() {
+          _testing = false;
+        });
+      }
     });
   }
 
   // 连接天气服务测试
   void testQWService(BuildContext context) {
+    if (mounted) {
+      setState(() {
+        _testing = true;
+      });
+    }
+
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
@@ -200,7 +222,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
     String jsString = jsonEncode(reqData);
     List<int> listData = utf8.encode(jsString);
 
-    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_QWSVC, 0, listData).whenComplete(() {
+    widget.bleTrx.transceive(0, BLE_CMD_DEV_TEST, BLE_CMD_DEV_TEST_QWSVC, 0, listData).then((result) {
       if (widget.bleTrx.getRApduSW() == 0x9000) {
           showResultMessage(context, "天气服务测试通过", true);
       } else {
@@ -211,6 +233,12 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
       showResultMessage(context, "出错了", false);
     }).timeout(const Duration(milliseconds: 5000), onTimeout: () {
       showResultMessage(context, "设备未响应", false);
+    }).whenComplete(() {
+      if (mounted) {
+        setState(() {
+          _testing = false;
+        });
+      }
     });
   }
   

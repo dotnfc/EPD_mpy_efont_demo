@@ -68,6 +68,12 @@ class _ScanScreenState extends State<ScanScreen> {
   }
 
   Future onScanPressed() async {
+
+    _scanResults.clear();
+    if (mounted) {
+      setState(() {});
+    }
+
     try {
       _systemDevices = await FlutterBluePlus.systemDevices;
     } catch (e) {
@@ -165,6 +171,36 @@ class _ScanScreenState extends State<ScanScreen> {
         .toList();
   }
 
+  Widget buildSpinner(BuildContext context) {
+    if (_isScanning) {
+      return const Padding(
+        padding: EdgeInsets.all(14.0),
+        child: AspectRatio(
+          aspectRatio: 1.0,
+          child: CircularProgressIndicator(
+            backgroundColor: Colors.black12,
+            color: Colors.black26,
+          ),
+        ),
+      );
+    }
+    else {
+      return Container();
+    }
+  }
+
+  Widget buildResult(BuildContext context) {
+    return RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView(
+            children: <Widget>[
+              ..._buildSystemDeviceTiles(context),
+              ..._buildScanResultTiles(context),
+            ],
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaffoldMessenger(
@@ -173,18 +209,11 @@ class _ScanScreenState extends State<ScanScreen> {
         appBar: AppBar(
           leading: const Icon(Icons.bluetooth),
           title: Text(AppLocalizations.of(context)!.searcheForecastDevice),
+          actions: [buildSpinner(context)],
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
         ),
-        body: RefreshIndicator(
-          onRefresh: onRefresh,
-          child: ListView(
-            children: <Widget>[
-              ..._buildSystemDeviceTiles(context),
-              ..._buildScanResultTiles(context),
-            ],
-          ),
-        ),
+        body: buildResult(context),
         floatingActionButton: buildScanButton(context),
       ),
     );

@@ -192,15 +192,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return const SizedBox(height: 10);
   }
 
-  Widget buildConnectButton(BuildContext context) {
-    return Row(children: [
-      if (_isConnecting || _isDisconnecting) buildSpinner(context),
-      TextButton(
+  Widget buildButtonActions(BuildContext context) {
+    return TextButton(
           onPressed: _isConnecting ? onCancelPressed : (isConnected ? onDisconnectPressed : onConnectPressed),
           child: Text(
             _isConnecting ? "取消" : (isConnected ? "断开连接" : "连接"),
             style: Theme.of(context).primaryTextTheme.labelLarge?.copyWith(color: Colors.white),
-          ))
+          ));
+  }
+
+  Widget buildConnectButton(BuildContext context) {
+    return Row(children: [
+      if (_isConnecting || _isDisconnecting) buildSpinner(context),
+      buildButtonActions(context)
     ]);
   }
 

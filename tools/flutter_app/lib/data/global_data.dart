@@ -14,7 +14,8 @@ import 'package:flutter/foundation.dart';
       {"name": "月历", "ico": "qi-ico-calendarmonth", "id": 2}, 
       {"name": "天气", "ico": "qi-sunny", "id": 3}
     ], 
-    "we_key": "6d76a5bd96da4eada10fbf19c7077fbb"}
+    "we_key": "6d76a5bd96da4eada10fbf19c7077fbb"
+  }
 */
 class PageItem {
   String name;

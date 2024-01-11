@@ -92,8 +92,8 @@ class BleTransmit {
         if (seq > 0x80) {
           seq = 0;
         }
-
-        await Future.delayed(const Duration(milliseconds: 60));
+        // make esp32-ble to take a breath
+        await Future.delayed(const Duration(milliseconds: 100));
       }
 
       try {
