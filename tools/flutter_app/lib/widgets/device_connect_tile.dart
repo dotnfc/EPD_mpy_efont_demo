@@ -2,8 +2,6 @@
 //
 
 import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:eforecast/screens/search_city_screen.dart';
 import 'package:eforecast/screens/wifi_list_screen.dart';
@@ -27,6 +25,7 @@ class DeviceConnectTile extends StatefulWidget {
 
 class _DeviceConnectTileState extends State<DeviceConnectTile> {
   bool _testing = false;
+  late GlobalConfigProvider _prov;
 
   @override
   void initState() {
@@ -35,22 +34,23 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
 
   @override
   Widget build(BuildContext context) {
-    var prov = context.watch<GlobalConfigProvider>();
+
+    _prov = context.watch<GlobalConfigProvider>();
 
     // WiFi Connection
     TextEditingController ctrlTextSSID = TextEditingController(
-      text: prov.config.ssid,
+      text: _prov.config.ssid,
     );
     TextEditingController ctrlTextPass = TextEditingController(
-      text: prov.config.passwd,
+      text: _prov.config.passwd,
     );
 
     // Weather API
     TextEditingController ctrlTextQWKey = TextEditingController(
-      text: prov.config.weKey,
+      text: _prov.config.weKey,
     );
     TextEditingController ctrlTextQWCity = TextEditingController(
-      text: prov.config.weCity,
+      text: _prov.config.weCity,
     );
 
     return Consumer<GlobalConfigProvider>(builder: (context, value, child) { 
@@ -73,10 +73,10 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                     labelText: '请输入热点名',
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.chevron_right_outlined),
-                      onPressed: () { devListWifi(widget.bleTrx); }
+                      onPressed: () { devListWifi(context, widget.bleTrx); }
                     ),
                   ),
-                  onChanged: (value) => { prov.config.ssid = value }
+                  onChanged: (value) => { _prov.config.ssid = value }
                 ),
                 const SizedBox(height: 6),
                 PasswordTextField(
@@ -84,7 +84,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                   icon: const Icon(MaterialSymbols.lock, fill: 0, weight: 200, color: Colors.green),
                   hintText: 'WiFi 密码',
                   labelText: '热点访问密码',
-                  onChanged: (value) => { prov.config.passwd = value }
+                  onChanged: (value) => { _prov.config.passwd = value }
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -99,7 +99,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       onPressed: () { qwApiKeyTip(context); }
                     ),
                   ),
-                  onChanged: (value) => { prov.config.weKey = value }
+                  onChanged: (value) => { _prov.config.weKey = value }
                 ),
                 const SizedBox(height: 6),
                 TextField(
@@ -115,7 +115,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
                       onPressed: () { searchCity(context, ctrlTextQWCity.text); }
                     ),
                   ),
-                  onChanged: (value) => { prov.config.weCity = value }
+                  onChanged: (value) => { _prov.config.weCity = value }
                 ),
                 const SizedBox(height: 6),
                 ListTile(
@@ -158,7 +158,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
     }
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
+    var prov = _prov;
     if (prov.config.ssid.isEmpty || prov.config.passwd.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -205,7 +205,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    var prov = Provider.of<GlobalConfigProvider>(context, listen: false);
+    var prov = _prov;
     if (prov.config.weKey.isEmpty || prov.config.weCity.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -248,7 +248,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
   }
 
   // get a list of local wifi hot-spots
-  void devListWifi(BleTransmit bleTrx) async {
+  void devListWifi(BuildContext context, BleTransmit bleTrx) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -257,8 +257,8 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
     );
 
     if (result != null) {
-      Provider.of<GlobalConfigProvider>(context, listen: false).config.ssid = result;
-      Provider.of<GlobalConfigProvider>(context, listen: false).notifyOnly();
+      _prov.config.ssid = result;
+      _prov.notifyOnly();
     }
   }
 
@@ -276,7 +276,7 @@ class _DeviceConnectTileState extends State<DeviceConnectTile> {
         setState(() {
           String strCurrent = (value != null) ? value : currentCity;
           List<String> parts = strCurrent.split(':');
-          Provider.of<GlobalConfigProvider>(context, listen: false).config.weCity = parts.first;
+          _prov.config.weCity = parts.first;
         });
       }
     });

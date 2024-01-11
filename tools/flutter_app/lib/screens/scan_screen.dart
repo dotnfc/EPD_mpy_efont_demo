@@ -13,6 +13,7 @@ import '../utils/snackbar.dart';
 import '../widgets/system_device_tile.dart';
 import '../widgets/scan_result_tile.dart';
 import '../utils/extra.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ScanScreen extends StatefulWidget {
   const ScanScreen({super.key});
@@ -27,10 +28,12 @@ class _ScanScreenState extends State<ScanScreen> {
   bool _isScanning = false;
   late StreamSubscription<List<ScanResult>> _scanResultsSubscription;
   late StreamSubscription<bool> _isScanningSubscription;
+  String _version = 'Unknown';
 
   @override
   void initState() {
     super.initState();
+    getAppVersion();
 
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen((results) {
 
@@ -67,8 +70,19 @@ class _ScanScreenState extends State<ScanScreen> {
     super.dispose();
   }
 
-  Future onScanPressed() async {
+  Future<void> getAppVersion() async {
+    final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    // String appName = packageInfo.appName;
+    // String packageName = packageInfo.packageName;
+    // String version = packageInfo.version;
+    // String buildNumber = packageInfo.buildNumber;
+    setState(() {
+      _version = packageInfo.version;
+    });
+  }
 
+
+  Future onScanPressed() async {
     _scanResults.clear();
     if (mounted) {
       setState(() {});
@@ -189,6 +203,20 @@ class _ScanScreenState extends State<ScanScreen> {
     }
   }
 
+  Widget showVersion(BuildContext context) {
+    return Positioned(
+      left: 16.0,
+      bottom: 16.0,
+      child: Text(
+        '版本 V$_version',
+        style: const TextStyle(
+          fontSize: 11.0,
+          color: Colors.grey, 
+        ),
+      ),
+    );      
+  }
+
   Widget buildResult(BuildContext context) {
     return RefreshIndicator(
           onRefresh: onRefresh,
@@ -213,7 +241,12 @@ class _ScanScreenState extends State<ScanScreen> {
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
         ),
-        body: buildResult(context),
+        body: Stack(
+          children: [
+            buildResult(context),
+            showVersion(context),
+          ]
+        ),
         floatingActionButton: buildScanButton(context),
       ),
     );

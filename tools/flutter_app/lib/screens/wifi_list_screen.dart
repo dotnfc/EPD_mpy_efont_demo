@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:eforecast/utils/ble_transmit.dart';
 import 'package:eforecast/utils/qwicons.dart';
-import 'package:eforecast/utils/snackbar.dart';
 import 'package:flutter/material.dart';
 
 class WiFiListPage extends StatefulWidget {

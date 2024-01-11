@@ -11,7 +11,7 @@ import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
 import '../utils/snackbar.dart';
 
 class BluetoothOffScreen extends StatelessWidget {
-  const BluetoothOffScreen({Key? key, this.adapterState}) : super(key: key);
+  const BluetoothOffScreen({super.key, this.adapterState});
 
   final BluetoothAdapterState? adapterState;
 

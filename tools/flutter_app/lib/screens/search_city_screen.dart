@@ -52,7 +52,7 @@ class _SearchCityScreenState extends State<SearchCityScreen> {
           },
           backgroundColor: Colors.lightBlue,
           foregroundColor: Colors.white,
-          child: Text('确认')
+          child: const Text('确认')
         ),
     );
   }

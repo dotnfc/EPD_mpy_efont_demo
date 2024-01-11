@@ -16,7 +16,6 @@ import 'package:eforecast/widgets/device_home_page_tile.dart';
 import 'package:eforecast/widgets/device_info_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus_windows/flutter_blue_plus_windows.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 // import 'package:eforecast/l10n/l10n.dart';
 

@@ -12,7 +12,7 @@ import "../utils/snackbar.dart";
 class DescriptorTile extends StatefulWidget {
   final BluetoothDescriptor descriptor;
 
-  const DescriptorTile({Key? key, required this.descriptor}) : super(key: key);
+  const DescriptorTile({super.key, required this.descriptor});
 
   @override
   State<DescriptorTile> createState() => _DescriptorTileState();
