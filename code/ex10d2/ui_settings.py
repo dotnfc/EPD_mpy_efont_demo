@@ -216,9 +216,11 @@ class uiSettings(object):
         async def shutdown(request):
             request.app.shutdown()
             return 'The server is shutting down...'
-        
-        wwwbot.run(debug=True, port=WWW_PORT)
 
+        async def web_app():
+            # wwwbot.run(debug=True, port=WWW_PORT)
+            wwwbot.start_server(host='0.0.0.0', port=WWW_PORT, debug=False, ssl=None)
+        
         async def resetTask():
             '''task for delayed resetting'''
             await asyncio.sleep_ms(300)
@@ -226,5 +228,11 @@ class uiSettings(object):
                 machine.reset()
             else:
                 print('sys reset')
-
         
+        async def runBleWeb():
+            t1 = asyncio.create_task(ble.ble_app())
+            t2 = asyncio.create_task(web_app())
+            await asyncio.gather(t1, t2)
+                   
+        asyncio.run(runBleWeb())
+

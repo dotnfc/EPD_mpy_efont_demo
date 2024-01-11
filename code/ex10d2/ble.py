@@ -282,11 +282,11 @@ class bleFramer(object):
         except aioble.DeviceDisconnectedError:
             print('disconnected')
 
-    async def peripheral_task(self):
+    async def peripheral_task(self, bleName):
         while True:
             connection = await aioble.advertise(
                 _ADV_INTERVAL_MS,
-                name = getBleDevName(),
+                name = bleName,
                 services=[_UART_UUID]
             )
             print("Connection from", connection.device)
@@ -295,20 +295,26 @@ class bleFramer(object):
             await connection.disconnected()
             print('Connection closed')
 
+_ble_name = ""
 def getBleDevName():
-    if sys.platform == 'linux':
-        sid = "023178205809"
-    else:
-        mac = bluetooth.BLE().config('mac') # (addr_type, addr)
+    global _ble_name
+    if _ble_name == "":
+        ble = bluetooth.BLE()
+        ble.active(True)
+        mac = ble.config('mac') # (addr_type, addr)
+        ble.active(False)
+    
         sid = ''.join(['{:02X}'.format(b) for b in mac[1]])
-    return f"eFore-{sid}"
+        _ble_name = f"eFore-{sid}"
+    return _ble_name
 
 # Run both tasks.
 async def ble_app():
     bleEF = bleFramer()
     bleEF.start()
-    await bleEF.peripheral_task()
+    await bleEF.peripheral_task(_ble_name)
 
 if __name__ == '__main__':
     asyncio.run(ble_app())
+
 

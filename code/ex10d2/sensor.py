@@ -113,3 +113,6 @@ def isNFCPowered():
 
 snsTemprHumidity = TemprHumiditySensor()
 snsBattery = BatterySensor()
+
+if __name__ == '__main__':
+    snsTemprHumidity.read()
