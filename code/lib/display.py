@@ -7,6 +7,7 @@
 #
 
 import sys
+import framebuf
 if sys.platform == 'linux':
     # from panel.epd_sdl_420bw import *
     # from panel.epd_sdl_460bw import *
@@ -125,3 +126,30 @@ class EpdImage(EPD):
             return self.font.drawString(x, y, w, h, align, text, size)
         else:
             return self.font.drawString(x, y, w, h, align, text)
+
+    def initTextFast(self, fonName, width, height):
+        ''' Initialize Line Message Render Engine'''
+        
+        self.fast_width = (width + 7) & ~7
+        self.fast_height = height
+        height = height + 8
+        self.fast_buffer = bytearray((self.fast_width // 8) * height)
+        
+        self.fast_fb = framebuf.FrameBuffer(self.fast_buffer, self.fast_width, height, framebuf.MONO_HLSB)
+        #self.fast_font = FT2(ufont.fonts[f'{fonName}'], render=self.fast_fb, mono=True, size=height)
+        #self.fast_font.setColor(EPD_BLACK, EPD_WHITE)
+        
+    def drawTextFast(self, text, line):
+        y = line * self.fast_height
+        
+        if y > self.HEIGHT:
+            y = self.HEIGHT - self.fast_height - 4
+        
+        self.font.setRender(self.fast_fb)
+        
+        self.fast_fb.fill(EPD_WHITE)
+        self.font.drawString(2, 2, self.fast_width, self.fast_height, ALIGN_CENTER, text, self.fast_height)
+        self.refresh_fast(self.fast_buffer, 0, y, self.fast_width, self.fast_height)
+        
+        self.font.setRender(self)
+        

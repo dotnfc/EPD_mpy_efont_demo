@@ -69,7 +69,7 @@ class EPD(FrameBuffer):
     BUF_SIZE = const(WIDTH * HEIGHT // 4)
     
     def __init__(self):
-        self.spi = SPI(2, baudrate=2000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
+        self.spi = SPI(2, baudrate=15000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
         self.spi.init()
         
         self.cs = EPD_PIN_CS
@@ -131,19 +131,14 @@ class EPD(FrameBuffer):
                 
     def clear_screen(self):
         
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
+        self._set_pixel_address(0, 0)
 
         self._command(0x24)
         self.fill(self.white)
         self._data(self.buffer)
 
         self._command(0x26)
-        self.fill(self.black)
+        self.fill(self.white)
         self._data(self.buffer)
         
         self.Load_LUT(1)
@@ -151,46 +146,37 @@ class EPD(FrameBuffer):
         self._command(0x20)
         self.wait_until_idle()
                 
-    def display(self,Image):
+    def display(self, buf):
 
         self._command(0x49)
         self._data(0x00)
-        
-        self._command(0x4E)
-        self._data(0x00)
-        self._data(0x00)
-        self._command(0x4F)
-        self._data(0x00)
-        self._data(0x00)
-
-        self._command(0x24)
-        self._data(Image)
         self.Load_LUT(1)
         
+        self._set_pixel_address(0, 0)
+
+        self._command(0x24)
+        self._data(buf)
+        
+        self._command(0x26)
+        self._data(buf)
+        
         self._command(0x20)
         self.wait_until_idle()
         
-    def display_Part(self,Image):
+    def display_partial(self, buf):
 
-        self._command(0x44, ustruct.pack('<HH', 0x0000, self.WIDTH -1))
-        self._command(0x45, ustruct.pack('<HH', 0x0000, self.HEIGHT -1))
-        
-        self._command(0x4E)   # SET_RAM_X_ADDRESS_COUNTER
-        self._data(0x00)
-        self._data(0x00)
-
-        self._command(0x4F)   # SET_RAM_Y_ADDRESS_COUNTER
-        self._data(0x00)
-        self._data(0x00)
+        self.set_partial_area(0, 0, self.WIDTH, self.HEIGHT)
+        self.Load_LUT(2)
         
         self._command(0x24)
-        self._data(Image)
-        
-        self.Load_LUT(2)
+        self._data(buf)
+        #self._command(0x26)
+        #self._data(buf)
+                
         self._command(0x20)
         self.wait_until_idle()
 
-    def refresh(self, buf = None, full=True):
+    def refresh(self, buf = None, full=False):
         '''Update screen contents.
         
         Args:
@@ -200,7 +186,7 @@ class EPD(FrameBuffer):
         if full:
             self.display(self.buffer)
         else:
-            self.display_Part(self.buffer)
+            self.display_partial(self.buffer)
         
     def power_on(self):
         self._command(0x04)
@@ -259,20 +245,19 @@ class EPD(FrameBuffer):
         self._data(0xFF)
         self._data(0xFF)
         self._data(0xFF)  
-        self._data(0x4F)
+        self._data(0x0F)      # DM2 RAM ping-pong [0x4F:en] [0x0F:dis]
         self._data(0xFF)
         self._data(0xFF)
         self._data(0xFF)
         self._data(0xFF)  
 
-        # setting X direction start/end position of RAM: XSA = 0, XEA = WIDTH -1
-        self._command(0x44, ustruct.pack('<HH', 0x0000, self.WIDTH -1))
-
-        # setting Y direction start/end position of RAM: XSA = 0, XEA = HEIGHT -1
-        self._command(0x45, ustruct.pack('<HH', 0x0000, self.HEIGHT -1))
+        self._set_ram_address_range(0, 0, self.WIDTH -1, self.HEIGHT)
 
         self._command(0x22)   # Display Update Control 2
         self._data(0xCF)
+        
+        #self._command(0x21)   # Display Update Control 1
+        #self._data(0x00)
         
         self.clear_screen()
         
@@ -284,11 +269,29 @@ class EPD(FrameBuffer):
                 raise RuntimeError("Timeout out for waiting busy signal")
         
         sleep_ms(2)
-       
-    def reset(self):
-        self.rst(1)
-        sleep_ms(10)
+
+    def _set_ram_entry_mode(self):
+        '''Set the data entry mode'''
+        self._command(0x11, 0x03)
+
+    def _set_ram_address_range(self, x, y, w, h):
+        # setting X direction start/end position of RAM: XSA = 0, XEA = WIDTH -1
+        self._command(0x44, ustruct.pack('<HH', 0x0000, x + w))
+
+        # setting Y direction start/end position of RAM: YSA = 0, YEA = HEIGHT -1
+        self._command(0x45, ustruct.pack('<HH', 0x0000, y + h))
         
+    def _set_pixel_address(self, x, y):
+        self._command(0x4e, ustruct.pack('<H', x))
+        self._command(0x4f, ustruct.pack('<H', y))
+    
+    def set_partial_area(self, x, y, w, h):
+        # self._set_ram_entry_mode()
+        self._set_ram_address_range(x, y, w, h)
+        self._set_pixel_address(x, y)
+        
+    def reset(self):
+        '''reset panel'''
         self.rst(0)
         sleep_ms(10)
 
@@ -298,6 +301,14 @@ class EPD(FrameBuffer):
     def sleep(self):
         # self.power_off()        
         self._command(0x10, 0x03)
+
+    def refresh_fast(self, image, x, y, w, h):
+        self.Load_LUT(2)
+        self.set_partial_area(x, y, w -1, h -1)
+        self._command(0x24)
+        self._data(image)
+        self._command(0x20)
+        self.wait_until_idle()
         
 def main():
     BLACK = 0
@@ -311,9 +322,9 @@ def main():
     _stop = time.ticks_ms()
     print("init used: %d ms" % (_stop - _start))
 
-    #_start = time.ticks_ms()
-    # epd.clear_screen()
-    #_stop = time.ticks_ms()
+    _start = time.ticks_ms()
+    epd.clear_screen()
+    _stop = time.ticks_ms()
     print("clear used: %d ms" % (_stop - _start))
     
     epd.fill(WHITE)
@@ -321,7 +332,6 @@ def main():
     epd.line(0, 10, 380, 10, BLACK)
     
     for i in range(0, 10):
-        #print(f"loop {i}")
         epd.rect(i * 10, 430, 280, 10, epd.black)
         epd.text(str(i), 100 + i * 10, 330, epd.black)
     
@@ -337,4 +347,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

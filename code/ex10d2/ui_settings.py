@@ -35,6 +35,7 @@ class uiSettings(object):
         self.epd.loadFont("7seg")
         self.epd.loadFont("swissel")
         self.epd.selectFont("simyou")
+        self.epd.initTextFast("simyou", self.epd.WIDTH, 20)
         
     def drawQRcodeImage(self, epd, x, y, text):
         '''show QR at specified location'''
@@ -57,9 +58,11 @@ class uiSettings(object):
         """Run the settings loop"""
         log.info("Settings Started")
         
+        self.epd.drawTextFast(f"正在启动热点 {AP_NAME}", 4)
         self.AP = wlan_helper.WifiAPHelper()
         self.AP.start(AP_NAME, AP_PASS)
         
+        self.epd.drawTextFast(f"正在启动 WEB/BLE 服务", 5)
         self.showInformations()
 
         if sys.platform == 'linux':
@@ -82,6 +85,7 @@ class uiSettings(object):
             width -= ext + 4
             
     def showInformations(self):
+        
         self.epd.setColor(EPD_BLACK, EPD_WHITE)
         self.epd.selectFont("simyou")
         
@@ -219,7 +223,18 @@ class uiSettings(object):
 
         async def web_app():
             # wwwbot.run(debug=True, port=WWW_PORT)
-            wwwbot.start_server(host='0.0.0.0', port=WWW_PORT, debug=False, ssl=None)
+
+            await wwwbot.start_server(host='0.0.0.0', port=WWW_PORT, debug=False, ssl=None)
+
+    
+        async def runBleWeb():
+            print("all run")
+            t1 = asyncio.create_task(ble.ble_app())
+            t2 = asyncio.create_task(web_app())
+            await asyncio.gather(t1, t2)
+            print("eog")
+            
+        asyncio.run(runBleWeb())
         
         async def resetTask():
             '''task for delayed resetting'''
@@ -228,11 +243,4 @@ class uiSettings(object):
                 machine.reset()
             else:
                 print('sys reset')
-        
-        async def runBleWeb():
-            t1 = asyncio.create_task(ble.ble_app())
-            t2 = asyncio.create_task(web_app())
-            await asyncio.gather(t1, t2)
-                   
-        asyncio.run(runBleWeb())
 
