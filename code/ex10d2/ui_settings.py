@@ -37,13 +37,13 @@ class uiSettings(object):
         self.epd.selectFont("simyou")
         self.epd.initTextFast("simyou", self.epd.WIDTH, 20)
         
-    def drawQRcodeImage(self, epd, x, y, text):
+    def drawQRcodeImage(self, epd, x, y, text, scale = 4):
         '''show QR at specified location'''
         import uqr                
         qr = uqr.make(text)
         
         _start = time.ticks_ms()
-        qr.draw(epd, x, y, 4)
+        qr.draw(epd, x, y, scale)
         _end = time.ticks_ms()
         print(f"time2 used {_end - _start}ms")
     
@@ -111,25 +111,29 @@ class uiSettings(object):
         # self.hline_dots(180, 260, 600)
         
         msg = f"2. 访问配置页面"
-        self.epd.drawText(100, 290, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        self.epd.drawText(100, 300, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 右侧扫码访问"
-        self.epd.drawText(100, 320, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        self.epd.drawText(100, 330, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 手工访问 {sUrl}"
-        self.epd.drawText(100, 350, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        self.epd.drawText(100, 360, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         msg = f"3. 使用配置应用进行配置（蓝牙）"
-        self.epd.drawText(100, 430, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
-        msg = f"   - 下载【e预报】应用，然后通过蓝牙连接设备"
         self.epd.drawText(100, 460, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
-        msg = f"   - 名称：{ble.getBleDevName()}"
+        msg = f"   - 下载【e预报】应用，然后通过蓝牙连接设备"
         self.epd.drawText(100, 490, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        msg = f"   - 名称：{ble.getBleDevName()}"
+        self.epd.drawText(100, 520, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         # AP 二维码
-        self.drawQRcodeImage(self.epd, 652, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
+        self.drawQRcodeImage(self.epd, 702, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
         
         # 配置页面
-        self.drawQRcodeImage(self.epd, 658, 290, sUrl)
+        self.drawQRcodeImage(self.epd, 708, 285, sUrl)
         
+        # 配置 app
+        sUrl = "https://www.123pan.com/s/6nQ9jv-RMrBh.html"
+        self.drawQRcodeImage(self.epd, 702, 460, sUrl)
+
         self.epd.line(60, 600, 900, 600, 0)
         
         self.epd.drawText(100, 606, 760, 606, ALIGN_CENTER, "eForecast by .NFC, firmware version: 1.0.00", 16)
