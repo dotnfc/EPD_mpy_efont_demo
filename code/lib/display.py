@@ -27,6 +27,7 @@ import time
 
 EPD_BLACK     = const(0)
 EPD_WHITE     = const(1)
+LINE_PADDING  = const(8)
 
 class EpdImage(EPD):
         
@@ -42,7 +43,9 @@ class EpdImage(EPD):
         
     def clear(self, fg = EPD_WHITE):
         self.fill(fg)
-
+        if sys.platform == "linux":
+            self.refresh()
+            
     def drawImage(self, x, y, filename):
         '''Draw image file at (x, y).'''
         self.image.setColor(self.foreColor, self.backColor)
@@ -132,15 +135,15 @@ class EpdImage(EPD):
         
         self.fast_width = (width + 7) & ~7
         self.fast_height = height
-        height = height + 8
+        height = height + LINE_PADDING
         self.fast_buffer = bytearray((self.fast_width // 8) * height)
         
         self.fast_fb = framebuf.FrameBuffer(self.fast_buffer, self.fast_width, height, framebuf.MONO_HLSB)
-        #self.fast_font = FT2(ufont.fonts[f'{fonName}'], render=self.fast_fb, mono=True, size=height)
-        #self.fast_font.setColor(EPD_BLACK, EPD_WHITE)
         
     def drawTextFast(self, text, line):
-        y = line * self.fast_height
+        if self.font == None: return
+        
+        y = line * (self.fast_height + LINE_PADDING)
         
         if y > self.HEIGHT:
             y = self.HEIGHT - self.fast_height - 4
@@ -149,7 +152,7 @@ class EpdImage(EPD):
         
         self.fast_fb.fill(EPD_WHITE)
         self.font.drawString(2, 2, self.fast_width, self.fast_height, ALIGN_CENTER, text, self.fast_height)
-        self.refresh_fast(self.fast_buffer, 0, y, self.fast_width, self.fast_height)
+        self.refresh_fast(self.fast_buffer, 0, y, self.fast_width, self.fast_height + LINE_PADDING)
         
         self.font.setRender(self)
         

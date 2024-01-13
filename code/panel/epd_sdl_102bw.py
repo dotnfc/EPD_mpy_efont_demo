@@ -39,4 +39,9 @@ class EPD(EpdSDLBase, FrameBuffer):
             buf = self.buf
         self.updateSubWindowBW(buf, 0, 0, self.WIDTH, self.HEIGHT)
         self.updateScreen()
-        pass
+    
+    def refresh_fast(self, image, x, y, w, h):
+        if image is None:
+            buf = self.buf
+        self.updateSubWindowBW(image, x, y, w, h)
+        self.updateScreen()

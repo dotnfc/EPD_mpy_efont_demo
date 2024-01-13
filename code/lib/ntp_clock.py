@@ -1,7 +1,12 @@
 '''
    sync local time and rtc from ntp server
 '''
-import ntptime, machine
+import machine
+
+try:
+    import ntptime
+except:
+    import usdl2_ntptime as ntptime
 
 try:
     import time
