@@ -151,19 +151,20 @@ def SDL_Poll():
 
     return sdl_exit_flag
 
-def SDL_KeyRead(key):
+APP_KEYS = [SDL_SCANCODE_A, SDL_SCANCODE_D, SDL_SCANCODE_W, SDL_SCANCODE_S] 
+def SDL_KeyRead(key, wait_released = False):
     '''Get Key State: 1 - pressed, 0 - released'''
-    
+    global APP_KEYS
+
     if SDL_Poll():
         return 0
     
-    if key == SDL_SCANCODE_A or key == SDL_SCANCODE_S or \
-       key == SDL_SCANCODE_D or key == SDL_SCANCODE_F:
+    if key in APP_KEYS:
         p_scancodes = SDL_GetKeyboardState(0)
         result_buffer = uctypes.bytearray_at(p_scancodes, SDL_NUM_SCANCODES)
         if result_buffer[key]:
             # key pressed, wait for released
-            while True:
+            while wait_released:
                 
                 if SDL_Poll():
                     return 0
@@ -173,4 +174,7 @@ def SDL_KeyRead(key):
                 if result_buffer[key] == 0:
                     # released
                     return 1
+            
+            return 1
+        
     return 0

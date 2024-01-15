@@ -28,46 +28,54 @@ class uiSwitch(object):
         self.epd.selectFont("simyou")
         self.epd.initTextFast("simyou", self.epd.WIDTH, 20)
         
-        self.current = settings.HOME_PAGE
-        if (self.current == 0) or (self.current > 3):
-            self.current = 1
-    
+        self.new = settings.HOME_PAGE
+        if (self.new == 0) or (self.new > 3):
+            self.new = 1
+        self.current = -1
+
     def button_action(self, kid, ishold):
         if (kid == 1):
-            print(f"A {ishold}")
+            self.new = self.new - 1
+            if self.new <= 0:
+                self.new = 3
         else:
-            print(f"B {ishold}")
+            self.new = self.new + 1
+            if self.new > 3:
+                self.new = 1
+
+        if ishold:
+            print(f"Enter")
         
-    async def startUILoop(self):
-        KeyA.set_callback(self.button_action)
-        print(f"keya {KeyA.action_cb}")
-        print(f"keyb {KeyB.action_cb}")
-        
-        KeyB.set_callback(self.button_action)
-        print(f"keya {KeyA.action_cb}")
-        print(f"keyb {KeyB.action_cb}")
-        
+    async def startUILoop(self):        
         if sys.platform == 'linux':
-                    
             while(self.epd.runable()):
                 await asyncio.sleep(0.01)
-                KeyA.update_state()
-                KeyB.update_state()
-            
+                self.updateDisplay()
             sys.exit(0)
         else:
             while(True):
                 await asyncio.sleep(0.01)
-                KeyA.update_state()
-                KeyB.update_state()
-    
+                self.updateDisplay()
+
+    async def buttonCheckLoop(self):
+        KeyA.set_callback(self.button_action)    
+        KeyB.set_callback(self.button_action)        
+        while(True):
+            await asyncio.sleep(0.01)
+            KeyA.update_state()
+            KeyB.update_state()
+                    
+    async def runTasks(self):
+        t1 = asyncio.create_task(self.startUILoop())
+        t2 = asyncio.create_task(self.buttonCheckLoop())
+        await asyncio.gather(t1, t2)
+
     # def rounded_rect(self, x, y
     def start(self):
         """Run the switch loop"""
         log.info("Switch Started")
-        self.updateDisplay()
-        
-        asyncio.run(self.startUILoop())
+                
+        asyncio.run(self.runTasks())
 
     def drawItem(self, icon, title, description, x, y, id):
         self.epd.selectFont("icons")
@@ -83,6 +91,11 @@ class uiSwitch(object):
 
     def updateDisplay(self):
         
+        if self.current == self.new:
+            return
+        
+        self.current = self.new
+
         self.epd.setColor(EPD_BLACK, EPD_WHITE)
         self.epd.selectFont("simyou")
         
@@ -96,19 +109,14 @@ class uiSwitch(object):
         self.drawItem(ICO_SETTING, "设置", "使用浏览器或者蓝牙 App 配置设备", 100, 120, 1)
         self.drawItem(ICO_CALENDAR_MONTH, "月历", "显示一个月历及节假日、家人生日信息", 100, 270, 2)
         self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 100, 420, 3)
-        
-        # self.epd.selectFont("icons")
-        
-        # self.epd.drawText(150, 120, 132, 132, ALIGN_LEFT, ICO_SETTING, 96)
-        # self.epd.drawText(400, 120, 132, 132, ALIGN_LEFT, ICO_CALENDAR_MONTH, 96)
-        # self.epd.drawText(650, 120, 132, 132, ALIGN_LEFT, QW_102, 96)
-        
-        # self.epd.selectFont("simyou")
-        # self.epd.drawText(150, 250, 96, 132, ALIGN_CENTER, "设置", 42)
-        # self.epd.drawText(400, 250, 96, 132, ALIGN_CENTER, "月历", 42)
-        # self.epd.drawText(650, 250, 96, 132, ALIGN_CENTER, "天气", 42)
                 
         # footer
+        if sys.platform == "linux":
+            strTip = "按键 W：向上 | 按键 S：向下 | 长按 W/S：确认"
+        else:
+            strTip = "按键1：向上 | 按键2：向下 | 长按1/2：确认"
+        self.epd.drawText(100, 576, 760, 606, ALIGN_CENTER, strTip, 16)
+
         self.epd.line(60, 600, 900, 600, 0)
         
         self.epd.drawText(100, 606, 760, 606, ALIGN_CENTER, "eForecast by .NFC, firmware version: 1.0.00", 16)

@@ -40,6 +40,7 @@ class EpdSDLBase():
         self._window = SDL_CreateWindow("EFORE Simulator Window", pos_center, pos_center, width * zoom, height * zoom, flags)
         self._renderer = SDL_CreateRenderer(self._window, -1, SDL_RENDERER_ACCELERATED)
         self._texture = SDL_CreateTexture(self._renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, self._w, self._h)
+        self.clearDisplay()
 
     def isSDLWindowCreated(self):
         return (self._window != None) and (self._renderer != None) and (self._texture != None)
@@ -80,9 +81,11 @@ class EpdSDLBase():
         SDL_RenderPresent(self._render)
     
     def clearDisplay(self):
-        SDL_SetRenderDrawColor(self._renderer, 0, 0, 0, 255)
+        SDL_SetRenderDrawColor(self._renderer, 255, 255, 255, 255)
         SDL_RenderClear(self._renderer)
-        
+        SDL_RenderPresent(self._renderer)
+        self.fillBWRam(1)
+
     def fillBWRam(self, color):
         ARGB = SDL_BLACK     # default black, in 0xAARRGGBB format
         if color != 0:
@@ -106,10 +109,11 @@ class EpdSDLBase():
         SDL_RenderCopy(self._renderer, self._texture, NULL, NULL)
         SDL_RenderPresent(self._renderer)
         SDL_UpdateWindowSurface(self._window)
+
         if full:
-            time.sleep(0.8)
+            time.sleep(0.2)
         else:
-            time.sleep(0.3)
+            time.sleep(0.1)
 
     def updateSubWindowBW(self, buffer, px, py, pw, ph):
         color = 0

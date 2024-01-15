@@ -18,6 +18,9 @@ class Button(object):
     SHORT_PRESS_LIMIT = const(200)
     LONG_PRESS_START = const(2000)
 
+    LEVEL_HIGH = 1
+    LEVEL_LOW = 0
+
     def __init__(self, pin, action_id = 0):
         self.pin = pin
         self.action_id = action_id   # caller provideded action identifier
@@ -40,12 +43,14 @@ class Button(object):
             
     def update_state(self):
         button_state = self.pin.value()
+        
         if self.current_state == self.IDLE:
-            if button_state == 0:
+            if button_state == self.LEVEL_LOW:
                 self.button_down_time = time.ticks_ms()
                 self.current_state = self.SHORT_PRESS_DETECT
+
         elif self.current_state == self.SHORT_PRESS_DETECT:
-            if button_state == 1:
+            if button_state == self.LEVEL_HIGH:
                 # released
                 button_press_duration = time.ticks_ms() - self.button_down_time
                 if button_press_duration >= self.SHORT_PRESS_START:
@@ -54,10 +59,12 @@ class Button(object):
             else:
                 # hold
                 button_press_duration = time.ticks_ms() - self.button_down_time
+
                 if button_press_duration >= self.SHORT_PRESS_LIMIT:
                     self.current_state = self.LONG_PRESS_DETECT
+
         elif self.current_state == self.LONG_PRESS_DETECT:
-            if button_state == 1:
+            if button_state == self.LEVEL_HIGH:
                 # released
                 self.current_state = self.IDLE
             else:
@@ -67,7 +74,7 @@ class Button(object):
                     self.on_long_press()
                     self.current_state = self.WAIT_FOR_RELEASE
         elif self.current_state == self.WAIT_FOR_RELEASE:
-            if button_state == 1:
+            if button_state == self.LEVEL_HIGH:
                 # released
                 self.current_state = self.IDLE
         else:

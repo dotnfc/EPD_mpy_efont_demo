@@ -43,8 +43,6 @@ class EpdImage(EPD):
         
     def clear(self, fg = EPD_WHITE):
         self.fill(fg)
-        if sys.platform == "linux":
-            self.refresh()
             
     def drawImage(self, x, y, filename):
         '''Draw image file at (x, y).'''
