@@ -79,15 +79,15 @@ class uiSwitch(object):
 
     def drawItem(self, icon, title, description, x, y, id):
         self.epd.selectFont("icons")
-        self.epd.drawText(x + 10, y + 10, 132, 132, ALIGN_LEFT, icon, 96)
+        self.epd.drawText(x + 10, y + 10, 132, 132, ALIGN_LEFT, icon, 64)
         
         self.epd.selectFont("simyou")
-        self.epd.drawText(x + 120, y + 16, 96, 132, ALIGN_LEFT, title, 42)
-        self.epd.drawText(x + 120, y + 66, 96, 132, ALIGN_LEFT, description, 32)
+        self.epd.drawText(x + 94, y + 8, 96, 132, ALIGN_LEFT, title, 32)
+        self.epd.drawText(x + 94, y + 46, 96, 132, ALIGN_LEFT, description, 24)
         
         if self.current == id:
             # self.epd.rounded_rect(140, 110, 114, 192, 20, 0)
-            self.epd.rounded_rect(x, y, 760, 120, 20, 0)
+            self.epd.rounded_rect(x, y, 600, 86, 16, 0)
 
     def updateDisplay(self):
         
@@ -107,9 +107,9 @@ class uiSwitch(object):
         
         # body
         self.drawItem(ICO_SETTING, "设置", "使用浏览器或者蓝牙 App 配置设备", 100, 120, 1)
-        self.drawItem(ICO_CALENDAR_MONTH, "月历", "显示一个月历及节假日、家人生日信息", 100, 270, 2)
-        self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 100, 420, 3)
-                
+        self.drawItem(ICO_CALENDAR_MONTH, "月历", "显示一个月历及节假日、家人生日信息", 100, 220, 2)
+        self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 100, 320, 3)
+
         # footer
         if sys.platform == "linux":
             strTip = "按键 W：向上 | 按键 S：向下 | 长按 W/S：确认"
