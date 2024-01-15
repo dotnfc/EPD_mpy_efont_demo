@@ -7,6 +7,7 @@ from button import *
 from ui_calendar import uiCalendar
 from ui_weather import uiWeather
 from ui_settings import uiSettings
+from ui_switch import uiSwitch
 # from sensor import *
 import settings
 
@@ -14,8 +15,9 @@ def main():
     log.setLevel(log.INFO)
     log.info("EFore Demo Started")
     
-    if checkGoSetting():
-        uiSettings().start()    # never return
+    #if checkGoSetting():
+    uiSwitch().start()
+    uiSettings().start()    # never return
 
     try:
         if settings.HOME_PAGE == 2:

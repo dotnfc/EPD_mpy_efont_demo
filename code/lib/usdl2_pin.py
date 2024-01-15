@@ -7,7 +7,7 @@ from usdl2 import SDL_KeyRead
 
 SDL_SCANCODE_A = const(4)   # KeyA
 SDL_SCANCODE_D = const(7)   # KeyB
-SDL_SCANCODE_F = const(9)
+SDL_SCANCODE_W = const(26)
 SDL_SCANCODE_S = const(22)
 
 class Pin(object):

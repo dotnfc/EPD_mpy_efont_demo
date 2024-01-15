@@ -20,7 +20,7 @@ if sys.platform == 'linux':
 else:
     import ble
     
-WWW_PORT = const(80) if sys.platform == 'linux' else const(2222)
+WWW_PORT = const(9090) if sys.platform == 'linux' else const(8080)
 
 class uiSettings(object):
         
@@ -44,15 +44,7 @@ class uiSettings(object):
         
         _start = time.ticks_ms()
         qr.draw(epd, x, y, scale)
-        _end = time.ticks_ms()
-        print(f"time2 used {_end - _start}ms")
-    
-    async def startUILoop(self):
-        while(self.epd.runable()):
-            await asyncio.sleep(0.1)
-
-        # now, quit the game
-        sys.exit(0)
+        _end = time.ticks_ms() 
 
     def start(self):
         """Run the settings loop"""
@@ -64,9 +56,6 @@ class uiSettings(object):
         
         self.epd.drawTextFast(f"正在启动 WEB/BLE 服务", 5)
         self.showInformations()
-
-        if sys.platform == 'linux':
-            asyncio.run(self.startUILoop())
         
         self.runWebServer()
     
@@ -149,6 +138,8 @@ class uiSettings(object):
 
         snsTemprHumidity.read()
         wwwbot = Microdot()
+        self.wwwShutdown = wwwbot.shutdown
+        
         cors.CORS(wwwbot, allowed_origins=['*'], allow_credentials=True)
         
         @wwwbot.route('/')
@@ -227,18 +218,16 @@ class uiSettings(object):
 
         async def web_app():
             # wwwbot.run(debug=True, port=WWW_PORT)
+            await wwwbot.start_server(host='0.0.0.0', port=WWW_PORT, debug=True, ssl=None)
 
-            await wwwbot.start_server(host='0.0.0.0', port=WWW_PORT, debug=False, ssl=None)
-
-    
         async def runBleWeb():
-            print("all run")
             t1 = asyncio.create_task(ble.ble_app())
             t2 = asyncio.create_task(web_app())
-            await asyncio.gather(t1, t2)
-            print("eog")
+            t3 = asyncio.create_task(self.homePageTask())
+            await asyncio.gather(t1, t2, t3)
             
         asyncio.run(runBleWeb())
+        #wwwbot.run(debug=True, port=WWW_PORT)
         
         async def resetTask():
             '''task for delayed resetting'''
@@ -248,3 +237,21 @@ class uiSettings(object):
             else:
                 print('sys reset')
 
+    async def homePageTask(self):
+        if sys.platform == 'linux':
+                    
+            while(self.epd.runable()):
+                await asyncio.sleep(0.01)
+                KeyA.update_state()
+                KeyB.update_state()
+                    
+            # now, quit the game
+            self.wwwShutdown() 
+            # dont care the ble_fake task
+            
+            sys.exit(0)
+        else:
+            while(True):
+                await asyncio.sleep(0.01)
+                KeyA.update_state()
+                KeyB.update_state()
