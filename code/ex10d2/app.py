@@ -9,24 +9,26 @@ from ui_weather import uiWeather
 from ui_settings import uiSettings
 from ui_switch import uiSwitch
 # from sensor import *
-import settings
+import settings, gc
 
 def main():
     log.setLevel(log.INFO)
     log.info("EFore Demo Started")
     
-    #if checkGoSetting():
-    uiSwitch().start()
-    uiSettings().start()    # never return
+    page_id = settings.HOME_PAGE
+    
+    if checkGoSetting():
+        switch_page = uiSwitch()
+        page_id = switch_page.start()
 
     try:
-        if settings.HOME_PAGE == 2:
+        if page_id == 2:
             uiCalendar().start()
-        elif settings.HOME_PAGE == 3:
+        elif page_id == 3:
             uiWeather().start()
         else:
             uiSettings().start()    # never return
-            
+
     except Exception as e:
         log.exception(e,'Exception in main.py')
     

@@ -32,7 +32,9 @@ class uiSwitch(object):
         if (self.new == 0) or (self.new > 3):
             self.new = 1
         self.current = -1
-
+        self.entered = False
+        self.running = False
+        
     def button_action(self, kid, ishold):
         if (kid == 1):
             self.new = self.new - 1
@@ -44,32 +46,44 @@ class uiSwitch(object):
                 self.new = 1
 
         if ishold:
-            print(f"Enter")
-        
+            self.entered = True
+
     async def startUILoop(self):        
         if sys.platform == 'linux':
             while(self.epd.runable()):
                 await asyncio.sleep(0.01)
                 self.updateDisplay()
+                
+                if not self.running:
+                    self.epd.closeWindow()
+                    return
             sys.exit(0)
         else:
-            while(True):
+            while(self.running):
                 await asyncio.sleep(0.01)
                 self.updateDisplay()
 
     async def buttonCheckLoop(self):
         KeyA.set_callback(self.button_action)    
-        KeyB.set_callback(self.button_action)        
-        while(True):
-            await asyncio.sleep(0.01)
-            KeyA.update_state()
-            KeyB.update_state()
-                    
+        KeyB.set_callback(self.button_action)
+        
+        try:
+            while(self.running):
+                await asyncio.sleep(0.01)
+                KeyA.update_state()
+                KeyB.update_state()
+        finally:
+            KeyA.set_callback(None)    
+            KeyB.set_callback(None)
+                        
     async def runTasks(self):
+        self.running = True
         t1 = asyncio.create_task(self.startUILoop())
         t2 = asyncio.create_task(self.buttonCheckLoop())
         await asyncio.gather(t1, t2)
 
+        print("task end")
+        
     # def rounded_rect(self, x, y
     def start(self):
         """Run the switch loop"""
@@ -77,6 +91,9 @@ class uiSwitch(object):
                 
         asyncio.run(self.runTasks())
 
+        
+        return self.current
+    
     def drawItem(self, icon, title, description, x, y, id):
         self.epd.selectFont("icons")
         self.epd.drawText(x + 10, y + 10, 132, 132, ALIGN_LEFT, icon, 64)
@@ -87,11 +104,25 @@ class uiSwitch(object):
         
         if self.current == id:
             # self.epd.rounded_rect(140, 110, 114, 192, 20, 0)
-            self.epd.rounded_rect(x, y, 600, 86, 16, 0)
+            self.epd.rounded_rect(x, y, 580, 86, 16, 0)
 
-    def updateDisplay(self):
+    def getLaunchPageName(self):
+        '''get launch page name'''
+        for item in UI_PAGES:
+            if item['id'] == self.current:
+                return item['name']
         
-        if self.current == self.new:
+        return None
+    
+    def updateDisplay(self):
+        '''draw contents'''
+        if self.entered:
+            strItem = self.getLaunchPageName()
+            if strItem is not None:
+                self.epd.drawTextFast(f"启动 {strItem} 中", 18)
+                self.running = False
+            return
+        elif self.current == self.new:
             return
         
         self.current = self.new
@@ -103,13 +134,16 @@ class uiSwitch(object):
         
         # header
         self.epd.drawText(0, 16, self.epd.WIDTH -1, 48, ALIGN_CENTER, "选择启动页面", 32)
-        self.epd.hline_dots(80, 60, 800)
+        self.epd.hline_dots(60, 60, 840)
         
         # body
-        self.drawItem(ICO_SETTING, "设置", "使用浏览器或者蓝牙 App 配置设备", 100, 120, 1)
-        self.drawItem(ICO_CALENDAR_MONTH, "月历", "显示一个月历及节假日、家人生日信息", 100, 220, 2)
-        self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 100, 320, 3)
+        self.drawItem(ICO_SETTING, "设置", "使用浏览器或者蓝牙 App 配置设备", 290, 120, 1)
+        self.drawItem(ICO_CALENDAR_MONTH, "月历", "显示一个月历及节假日、家人生日信息", 290, 220, 2)
+        self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 290, 320, 3)
 
+        self.epd.drawImage(60, 80, "image/song_he_d1.jpg")  
+        # self.epd.rounded_rect(60, 80, 200, 500, 16, 0)
+        
         # footer
         if sys.platform == "linux":
             strTip = "按键 W：向上 | 按键 S：向下 | 长按 W/S：确认"
@@ -123,4 +157,4 @@ class uiSwitch(object):
         #self.epd.selectFont("icons")
         #self.epd.drawText(66, 606, self.epd.WIDTH -1, 610, ALIGN_LEFT, ICO_SETTING_SOLID, 24)
 
-        self.epd.refresh(full=False)        
+        self.epd.refresh(full=False)

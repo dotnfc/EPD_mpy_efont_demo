@@ -12,6 +12,7 @@ from efore.qw_icons import *
 import ulunar, holidays, birthdays
 from button import *
 from settings import *
+import asyncio
 
 week_day_number_cn = ("日", "一", "二", "三", "四", "五", "六")
 zodiac_icon_line = (ZODIAC_SHU, ZODIAC_NIU, ZODIAC_HU, ZODIAC_TU, ZODIAC_LONG, ZODIAC_SHE, 
@@ -35,6 +36,12 @@ class uiCalendar(object):
         self.epd.loadFont("swissel")
         self.epd.selectFont("simyou")
     
+        self.draw_mday = 1
+        self.draw_month = 1
+        self.draw_year = 2024
+        self.redraw = True
+        self.entered = False
+        
     def test_calendar(self):
         year = 2023
         month = 12
@@ -161,7 +168,8 @@ class uiCalendar(object):
         # 今天画一个外框
         if nmon == idate.month and nday == idate.day:
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
-            self.epd.rect_3c(rect[0] + 1, rect[1] + 1, rect[2] - 2, rect[3] - 2, 1)
+            # self.epd.rect_3c(rect[0] + 1, rect[1] + 1, rect[2] - 2, rect[3] - 2, 1)
+            self.epd.rounded_rect(rect[0] + 1, rect[1] + 1, rect[2] - 2, rect[3] - 2, 10, 1)
             
     def drawBody(self, year, month, mday, lunar):
         '''显示主体内容，阳历、农历日期，节假日信息等'''
@@ -182,51 +190,81 @@ class uiCalendar(object):
                 x = 0
                 y += 1
 
+    def button_action(self, kid, ishold):
+        '''按键事件回调处理，调整日期供显示'''
+        if (kid == 1):
+            self.redraw = True
+            self.draw_mday = 1
+            self.draw_month = self.draw_month - 1
+            if self.draw_month <= 0:
+                self.draw_year = self.draw_year - 1
+                self.draw_month = 12
+            if self.draw_year <= 2020:
+                self.draw_year = 2020
+        else:
+            self.redraw = True
+            self.draw_mday = 1
+            self.draw_month = self.draw_month + 1
+            if self.draw_month >= 13:
+                self.draw_year = self.draw_year + 1
+                self.draw_month = 1
+            if self.draw_year >= 2025:
+                self.draw_year = 2025
+        
+        if ishold:
+            self.entered = True
+            
+    async def startUILoop(self):
+        '''UI 绘制任务'''
+        self.draw_year, self.draw_month, self.draw_mday, *_ = time.localtime()
+        # year, month, mday = 2024, 10, 22
+        self.redraw = True
+        
+        if sys.platform == 'linux':
+            while(self.epd.runable()):
+                await asyncio.sleep(0.01)
+                self.updateDisplay()
+            sys.exit(0)
+        else:
+            #while(True):
+            #    await asyncio.sleep(0.01)
+            #    self.updateDisplay()
+            
+            self.updateDisplay() # 硬件上，绘完就休眠
+            self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
+            
+    async def buttonCheckLoop(self):
+        '''按键处理任务'''
+        KeyA.set_callback(self.button_action)    
+        KeyB.set_callback(self.button_action)        
+        while(True):
+            await asyncio.sleep(0.01)
+            KeyA.update_state()
+            KeyB.update_state()
+                    
+    async def runTasks(self):
+        '''创建/运行子任务'''
+        t1 = asyncio.create_task(self.startUILoop())
+        t2 = asyncio.create_task(self.buttonCheckLoop())
+        await asyncio.gather(t1, t2)
+        
     def start(self):
         """Run the weather station display loop"""
         log.info("Calendar Started")
         #wifiHelper.connect(WIFI_SSID, WIFI_PASS)
-
-        year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
-        # year, month, mday = 2024, 10, 22
-        lunar = ulunar.Lunar(year, month, mday)
         
-        reDraw = True
-        while self.epd.runable():
-            if reDraw:
-                # self.epd.init() # if refresh multi times, uncomment this line.
-                self.epd.clear()
-                self.drawTitle(year, month, mday, lunar)
-                self.drawBody(year, month, mday, lunar)
-                self.epd.refresh() # this will do deep-sleep. use init() to refresh again.
-                reDraw = False
+        asyncio.run(self.runTasks())
+        
+    def updateDisplay(self):
+        '''屏幕绘制'''
+        if self.redraw:
+            lunar = ulunar.Lunar(self.draw_year, self.draw_month, self.draw_mday)
             
-            if KeyA.is_pressed():
-                month = month - 1
-                if month <= 0:
-                    year = year - 1
-                    month = 12
-                if year <= 2020:
-                    year = 2020
-                    continue
-                
-                lunar = ulunar.Lunar(year, month, mday)
-                reDraw = True
-            elif KeyB.is_pressed():
-                month = month + 1
-                if month >= 13:
-                    year = year + 1
-                    month = 1
-                if year >= 2025:
-                    year = 2025
-                    continue
-                
-                lunar = ulunar.Lunar(year, month, mday)
-                reDraw = True
-            
-            if KeyA.is_holding() or KeyB.is_holding():
-                break
-            time.sleep_ms(100)
+            # self.epd.init() # if refresh multi times, uncomment this line.
+            self.epd.clear()
+            self.drawTitle(self.draw_year, self.draw_month, self.draw_mday, lunar)
+            self.drawBody(self.draw_year, self.draw_month, self.draw_mday, lunar)
+            self.epd.refresh() # this will do deep-sleep. use init() to refresh again.
+            self.redraw = False
 
-        self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
 

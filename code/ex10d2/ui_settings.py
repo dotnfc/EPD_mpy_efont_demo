@@ -13,7 +13,7 @@ from efore.qw_icons import *
 from settings import *
 from sensor import *
 from button import *
-import devinfo
+import devinfo, settings
 
 if sys.platform == 'linux':
     import ble_fake as ble
@@ -190,20 +190,20 @@ class uiSettings(object):
         @wwwbot.get('/settings')
         async def onGetSettings(request):
             '''获取配置, 返回 json list'''
-            doc = {}
-            doc["ssid"] = WIFI_SSID
-            doc["passwd"] = WIFI_PASS
+            #doc = {}
+            #doc["ssid"] = WIFI_SSID
+            #doc["passwd"] = WIFI_PASS
 
-            doc["we_key"] = QW_API_KEY
-            doc["we_city"] = QW_API_CITY
-            doc["page_nbr"] = 1
+            #doc["we_key"] = QW_API_KEY
+            #doc["we_city"] = QW_API_CITY
+            #doc["page_nbr"] = 1
             # doc["page_list"] = [ 
             #         {"name": "首页", "ico": "qi-ico-home", "id": 1}, 
             #         {"name": "月历", "ico": "qi-ico-calendarmonth", "id": 2}, 
             #         {"name": "天气", "ico": "qi-ico-sunny", "id": 3}, 
             #     ]
-            doc["page_list"] = '[{"name":"首页","ico":"qi-ico-home","id":1},{"name":"月历","ico":"qi-ico-calendarmonth","id":2},{"name":"天气","ico":"qi-sunny","id":3}]'
-            return doc
+            #doc["page_list"] = '[{"name":"首页","ico":"qi-ico-home","id":1},{"name":"月历","ico":"qi-ico-calendarmonth","id":2},{"name":"天气","ico":"qi-sunny","id":3}]'
+            return settings.cfgGet()
 
         @wwwbot.post('/settings')
         async def onPostSettings(request):

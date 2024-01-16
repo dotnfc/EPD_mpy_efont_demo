@@ -227,7 +227,7 @@ class bleFramer(object):
     def processDevInfo(self, connection):
         '''获取设备命令处理'''
         print('[cmd] devinfo')
-        dev_info = devinfo.DeviceInfo()
+        dev_info = devinfo.DeviceInfo(True)
         strInfo = json.dumps(dev_info)
         self.sendResponseSW(connection, self.compress(strInfo), 0x9000)
 

@@ -56,12 +56,14 @@ class EpdSDLBase():
                 # if event.type 
             self.refresh_event.clear()
             
-    def __del__(self):
+    def closeWindow(self):
         SDL_DestroyTexture(self._texture)
         SDL_DestroyRenderer(self._renderer)
         SDL_DestroyWindow(self._window)
         SDL_Quit()
-        pass
+
+    def __del__(self):
+        self.closeWindow()
         
     def setScale(self, scale):
         refw = array.array("P", [0])
