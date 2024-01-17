@@ -377,16 +377,9 @@ class uiWeather(object):
     
     def genTempMarkersList(self, low, high):
         '''依据高低温值，产生坐标值列表'''
-        
-        if high - low < 6:
-            center = (high - low) // 2
-            high = center + 3
-            low = center - 3 
-        
-        step = (high - low + 5) // 6
-        
-        markers = [low, low + step, low + 2 * step, low + 3 * step, low + 4 * step, low + 5 * step]
-        high = low + step * 6  # 更新逻辑上的 high
+        num_markers = 6
+        step = (high - low) / (num_markers - 1)
+        markers = [round(low + i * step) for i in range(num_markers)]
         return low, high, markers
             
     def get24HTempLowHigh(self):
