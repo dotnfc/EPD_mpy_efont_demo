@@ -123,5 +123,6 @@ days 变量中，注意分隔符是制表符 '\t'。
  - [pycopy-lib](https://github.com/pfalcon/pycopy-lib)
  - [microdot](https://github.com/miguelgrinberg/microdot) 
  - [国家假期安排](https://github.com/LKI/chinese-calendar)
+ - [图片抖动工具](https://github.com/cyotek/Dithering)
  - [Chinese zodiac sign icons] By StevyG
 
