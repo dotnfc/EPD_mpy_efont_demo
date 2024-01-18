@@ -5,7 +5,7 @@
 # NOTE to save fw size, we have lunar_data since 1980-01-01 only!!!
 #      see script/lunar/convert-to-binary.js
 
-import time
+import time, sys
 from efore.lunar_data import _lunar_data
 
 # 天干地支之地支速查表<=>生肖
@@ -63,12 +63,20 @@ class Lunar():
         '''
         tm_now = (year, month, day, 0, 0, 0, 0, 0)
         now = time.mktime(tm_now)
-        # start = -2177481600  # 1901-01-01 00:00:00
-        start = 315504000  # 1980-01-01 00:00:00
-        ### tm_now = (1980, 1, 1, 0, 0, 0,  0, 1)
-        ### utime.mktime(tm_now)
-                
-        offset = (now - start) // (60 * 60 * 24) * 5
+        
+        # for unix,  1970/01/01 08:00:00
+        # for esp32, 2000/01/01 00:00:00
+        
+        if sys.platform == 'linux':
+            start = 315504000  # 1980-01-01 00:00:00
+            offset = (now - start) // (60 * 60 * 24) * 5
+        else: # esp32, stm32
+            # t80 = time.mktime((1980, 1, 1, 0, 0, 0, 0, 0, 0))
+            # t2k = time.mktime((2000, 1, 1, 0, 0, 0, 0, 0, 0))
+            # (t2k - t80 ) // (60 * 60 * 24) * 5 = 36525
+
+            offset = 36525 + (now // (60 * 60 * 24) * 5)
+            
         if offset < 0 or offset > len(_lunar_data) - 5:
             raise RuntimeError("invlaid dateTime to get lunar!")
         

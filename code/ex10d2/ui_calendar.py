@@ -137,15 +137,15 @@ class uiCalendar(object):
         # 假/班
         if strHoliday == '假':
             self.epd.setColor(EPD_RED, EPD_WHITE)
-            self.epd.rect_3c(day_x, rect[1], 24, 21, 1, True)
+            self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
             self.epd.setColor(EPD_WHITE, EPD_RED)
-            self.epd.drawText(day_x, rect[1] + 1, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
+            self.epd.drawText(day_x, rect[1] + 5, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
             self.epd.setColor(EPD_RED, EPD_WHITE)
         elif strHoliday == '班':
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
-            self.epd.rect_3c(day_x, rect[1], 24, 21, 1, True)
+            self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
             self.epd.setColor(EPD_WHITE, EPD_BLACK)
-            self.epd.drawText(day_x, rect[1] +1, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
+            self.epd.drawText(day_x, rect[1] +5, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
             
         # 家人生日
@@ -153,7 +153,7 @@ class uiCalendar(object):
         if str != '':
             self.epd.selectFont("icons")
             self.epd.setColor(EPD_RED, EPD_WHITE)
-            self.epd.drawText(day_x + 2, rect[1] + 26, rect[2] // 2, rect[3], ALIGN_LEFT, ICO_GIFT, 18)
+            self.epd.drawText(day_x + 2, rect[1] + 28, rect[2] // 2, rect[3], ALIGN_LEFT, ICO_GIFT, 18)
             self.epd.selectFont("simyou")
         else: 
             # 农历

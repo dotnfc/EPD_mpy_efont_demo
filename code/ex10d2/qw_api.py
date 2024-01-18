@@ -4,7 +4,7 @@
 '''
  
 import json, deflate
-import requests
+import urequests as requests
 
 ''' official website  https://www.qweather.com '''
 '''      dev website  https://dev.qweather.com '''
@@ -76,7 +76,7 @@ def get(api_type, city_id, api_key):
     resp = requests_deflate(url)
     if resp['code'] != '200':
         rcode = resp['code']
-        raise RuntimeError(f'QW request failed {api_code(rcode)}')
+        raise RuntimeError(f'QW request failed {api_code(rcode)}, key: {api_key}')
     else:
         return resp
     
