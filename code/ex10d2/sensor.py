@@ -69,6 +69,9 @@ class BatterySensor(object):
     
     def getVoltageForApp(self):
         vol = self.read()
+        vol = round(vol / 1000, 1)
+        svol = f"{vol} V"
+        return svol
     
     def getWebInfo(self):
         vol = self.read()

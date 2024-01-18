@@ -41,7 +41,7 @@ BATTERY_ADC  = Pin(1)
 BATTERY_ADC_EN= Pin(2)
 
 # temperature sensor
-SENSOR_EN   = Pin(40)  # -> IO5
+SENSOR_EN   = Pin(5)  # -> IO5
 SENSOR_SCL  = Pin(39)
 SENSOR_SDA  = Pin(38)
 

@@ -8,5 +8,5 @@ def DeviceInfo(isForApp = False) ->dict:
     res["内存"] = f"已用 {gc.mem_alloc()}，可用 {gc.mem_free()} (字节)"
     res["室温"] = f"{snsTemprHumidity.getTemperature()} ℃"
     res["湿度"] = f"{snsTemprHumidity.getHumidity()} %"
-    res["电量"] = snsBattery.getVoltageForApp if isForApp else snsBattery.getWebInfo(); 
+    res["电量"] = snsBattery.getVoltageForApp() if isForApp else snsBattery.getWebInfo(); 
     return res
