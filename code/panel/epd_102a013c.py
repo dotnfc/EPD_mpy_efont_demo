@@ -33,7 +33,7 @@ class EPD(FrameBuffer):
     BUF_SIZE = const(WIDTH * HEIGHT // 8)
 
     def __init__(self):
-        self.spi = SPI(2, baudrate=10000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
+        self.spi = SPI(1, baudrate=15000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
         self.spi.init()
         
         self.cs = EPD_PIN_CS

@@ -21,9 +21,9 @@ class EPD(EpdSDLBase, FrameBuffer):
     BUF_SIZE = const(WIDTH * HEIGHT // 8)
     
     def __init__(self, zoom = 1):
-        self.buf = bytearray(self.BUF_SIZE)
+        self.buffer = bytearray(self.BUF_SIZE)
         EpdSDLBase.__init__(self, self.WIDTH, self.HEIGHT, zoom)
-        FrameBufferEx.__init__(self, self.buf, self.WIDTH, self.HEIGHT, MONO_HLSB)
+        FrameBufferEx.__init__(self, self.buffer, self.WIDTH, self.HEIGHT, MONO_HLSB)
         
     def init(self):
         pass
@@ -36,12 +36,12 @@ class EPD(EpdSDLBase, FrameBuffer):
         
     def refresh(self, buf=None, full=True):
         if buf is None:
-            buf = self.buf
+            buf = self.buffer
         self.updateSubWindowBW(buf, 0, 0, self.WIDTH, self.HEIGHT)
         self.updateScreen()
     
     def refresh_fast(self, image, x, y, w, h):
         if image is None:
-            buf = self.buf
+            buf = self.buffer
         self.updateSubWindowBW(image, x, y, w, h)
         self.updateScreen()

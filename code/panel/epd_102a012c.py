@@ -69,7 +69,7 @@ class EPD(FrameBuffer):
     BUF_SIZE = const(WIDTH * HEIGHT // 4)
     
     def __init__(self):
-        self.spi = SPI(2, baudrate=15000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
+        self.spi = SPI(1, baudrate=15000000, polarity=0, phase=0, sck=EPD_PIN_SCK, mosi=EPD_PIN_SDA)
         self.spi.init()
         
         self.cs = EPD_PIN_CS
@@ -245,7 +245,7 @@ class EPD(FrameBuffer):
         self._data(0xFF)
         self._data(0xFF)
         self._data(0xFF)  
-        self._data(0x0F)      # DM2 RAM ping-pong [0x4F:en] [0x0F:dis]
+        self._data(0x4F)      # DM2 RAM ping-pong [0x4F:en] [0x0F:dis]
         self._data(0xFF)
         self._data(0xFF)
         self._data(0xFF)
@@ -309,6 +309,7 @@ class EPD(FrameBuffer):
         self._data(image)
         self._command(0x20)
         self.wait_until_idle()
+
         
 def main():
     BLACK = 0
@@ -342,8 +343,6 @@ def main():
     print("time used: %d ms" % (_stop - _start))
     
     epd.sleep()
-    
-    pass
 
 if __name__ == "__main__":
     main()
