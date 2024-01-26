@@ -69,7 +69,8 @@ class WifiSTAHelper(object):
     def disconnect(self):
         if self.wlan:
             self.wlan.disconnect()
-
+            self.wlan.active(False)
+        
     def active(self,state=None):
         if not self.wlan:
             return False

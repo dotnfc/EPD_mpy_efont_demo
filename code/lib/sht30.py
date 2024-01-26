@@ -37,7 +37,7 @@ class SHT3x_Sensor():
 
 if __name__ == "__main__":
     from machine import Pin
-    sens_en = Pin(40)
+    sens_en = Pin(5)
     sens_en.init(sens_en.OUT, value=1)
     sht3x_sensor = SHT3x_Sensor(freq=100000, sdapin=38, sclpin=39)
     measure_data = sht3x_sensor.read_temp_humd()

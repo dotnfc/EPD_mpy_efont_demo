@@ -43,7 +43,7 @@ class EpdImage(EPD):
         
     def clear(self, fg = EPD_WHITE):
         self.fill(fg)
-            
+
     def drawImage(self, x, y, filename):
         '''Draw image file at (x, y).'''
         self.image.setColor(self.foreColor, self.backColor)
@@ -181,4 +181,5 @@ class EpdImage(EPD):
         self.refresh_fast(self.fast_buffer, 0, y, self.fast_width, self.fast_height + LINE_PADDING)
         
         self.font.setRender(self)
-        
+    
+    
