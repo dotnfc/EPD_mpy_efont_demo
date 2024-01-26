@@ -3,10 +3,7 @@
     by .NFC 2023/12/23
 """
 import time
-try:
-    import urequests as requests
-except:
-    import requests
+
 
 from  wlan_helper import wifiHelper
 import logging as log
@@ -16,18 +13,16 @@ from efore.qw_icons import *
 from efore.city_list import china_citys
 from settings import *
 import datetime
-#from qw_api import *
-from qw_api_fake import *
 import ulunar, holidays, birthdays
 from button import *
-import ntp_clock
+
 
 _week_day_number_cn = ("一", "二", "三", "四", "五", "六", "日")
 _weather_chart_bar_xpos = [316, 445, 574, 703, 832]
 
 class uiWeather(object):
         
-    def __init__(self,**kwargs):
+    def __init__(self):
         self.epd = EpdImage()
         self.epd.init()
         self.epd.clear(EPD_WHITE, EPD_BLACK)
@@ -38,17 +33,16 @@ class uiWeather(object):
         self.epd.loadFont("7seg")
         self.epd.loadFont("swissel")
         self.epd.selectFont("simyou")
-        
-        self.qw_now = now(QW_API_CITY, QW_API_KEY)
-        self.qw_future = future(QW_API_CITY, QW_API_KEY)
-        self.qw_future_air = future_air(QW_API_CITY, QW_API_KEY)
-        self.qw_hourly = hourly(QW_API_CITY, QW_API_KEY)
-        
-    def start(self):
+
+    def start(self, qw_now, qw_future, qw_future_air, qw_hourly, yi_yan):
         """Run the weather station display loop"""
         log.info("Weather Started")
-        wifiHelper.connect(WIFI_SSID, WIFI_PASS)
-        ntp_clock.ntp_sync_via_wifi(TIME_ZONE_GMT8)
+        
+        self.qw_now = qw_now
+        self.qw_future = qw_future
+        self.qw_future_air = qw_future_air
+        self.qw_hourly = qw_hourly
+        self.yi_yan = yi_yan
         
         year, month, mday, hour, minute, second, weekday, yearday, *_ = time.localtime()
         # year, month, mday = 2024, 10, 22
@@ -373,7 +367,7 @@ class uiWeather(object):
         self.epd.line_3c(350, 616, 350, 620, 1)
         self.epd.line_3c(350, 622, 350, 628, 1)
         self.epd.line_3c(350, 630, 350, 634, 1)
-        self.epd.drawText(360, 610, 645 - 1, 48, ALIGN_LEFT, yiyan(), 22)
+        self.epd.drawText(360, 610, 645 - 1, 48, ALIGN_LEFT, self.yi_yan, 22)
     
     def genTempMarkersList(self, low, high):
         '''依据高低温值，产生坐标值列表'''
@@ -486,3 +480,4 @@ class uiWeather(object):
         for i in range(1, 6):
             self.epd.drawText(4, y - i * 24 - 12, 30, 30, ALIGN_RIGHT, str(y_marks[i]), 16)
             self.epd.dot_hline_3c(x, y - i * 24, x + 250, 1)
+

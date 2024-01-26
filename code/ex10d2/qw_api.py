@@ -4,7 +4,10 @@
 '''
  
 import json, deflate
-import urequests as requests
+try:
+    import urequests as requests
+except:
+    import requests
 
 ''' official website  https://www.qweather.com '''
 '''      dev website  https://dev.qweather.com '''
@@ -35,9 +38,15 @@ def api_code(code:int) ->str :
         return '未知错误'
 
 def requests_deflate(url):
-    # print(f"[d] => {url}")
-    r = requests.get(url, stream=True)
-    d = deflate.DeflateIO(r.raw, deflate.GZIP)
+    print(f"[d] => {url}")
+    try:
+        r = requests.get(url, stream=True)
+        d = deflate.DeflateIO(r.raw, deflate.GZIP)
+    except Exception as e:
+        resp = {}
+        resp['code'] = '500'
+        print(f"request {url} failed {str(e)}")
+        return resp
     return json.load(d)
 
 def test_api(key, city_id):
@@ -110,6 +119,7 @@ def now(city_id, api_key):
       "cloud": "10", 云量 %
       "dew": "21" 露点温度
     },'''
+    print(f"now {city_id} {api_key}")
     result = get('now', city_id, api_key)
     return result['now']
 
@@ -189,4 +199,5 @@ def yiyan() ->str:
         return r.json()['hitokoto']
     else:
         return '...'
+
 

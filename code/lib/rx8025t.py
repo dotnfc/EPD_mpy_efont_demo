@@ -105,8 +105,7 @@ class RX8025T():
             self.buf[5] = self.TOBCD(DT[1])   
             self.buf[6] = self.TOBCD(DT[0]) 
             self.i2c.writeto_mem(RX8025T_I2C_ADDRESS, RX8025T_REG_SECOND, self.buf) 
- 
-
+        
 #example   0->Sunday 1->Monday....  6->Saturday
 if __name__ =='__main__':
     from machine import SoftI2C,Pin

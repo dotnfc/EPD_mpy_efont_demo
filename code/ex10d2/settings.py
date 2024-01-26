@@ -2,7 +2,7 @@
 import io, json, deflate
 from micropython import const
 
-APP_DEEP_SLEEP_TIME_MS = const(10000)
+APP_DEEP_SLEEP_TIME_MS = const(1000 * 60 * 60)
 TIME_ZONE_GMT8 = const(28800)
 
 try:

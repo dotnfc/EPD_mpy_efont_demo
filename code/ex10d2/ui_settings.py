@@ -25,17 +25,9 @@ WWW_PORT = const(9090) if sys.platform == 'linux' else const(8080)
 class uiSettings(object):
         
     def __init__(self,**kwargs):
-        self.epd = EpdImage()
-        self.epd.init()
-        self.epd.clear(EPD_WHITE)
-        self.epd.setColor(EPD_BLACK, EPD_WHITE)
-
-        self.epd.loadFont("simyou")
-        self.epd.loadFont("icons")
-        self.epd.loadFont("7seg")
-        self.epd.loadFont("swissel")
-        self.epd.selectFont("simyou")
-        self.epd.initTextFast("simyou", self.epd.WIDTH, 20)
+        if sys.platform == 'linux':
+            self.epd = EpdImage()
+            self.epd.init()
         
     def drawQRcodeImage(self, epd, x, y, text, scale = 4):
         '''show QR at specified location'''
@@ -50,16 +42,35 @@ class uiSettings(object):
         """Run the settings loop"""
         log.info("Settings Started")
         
-        self.epd.drawTextFast(f"正在启动热点 {AP_NAME}", 4)
+        self.preLaunch()
+                
+        self.runWebServer()
+
+    def preLaunch(self):
+        if sys.platform == 'linux':
+            epd = self.epd
+        else:
+            epd = EpdImage()
+            epd.init()
+        epd.clear(EPD_WHITE)
+        epd.setColor(EPD_BLACK, EPD_WHITE)
+
+        epd.loadFont("simyou")
+        epd.loadFont("icons")
+        epd.loadFont("7seg")
+        epd.loadFont("swissel")
+        epd.selectFont("simyou")
+        epd.initTextFast("simyou", epd.WIDTH, 20)
+        
+        epd.drawTextFast(f"正在启动热点 {AP_NAME}", 4)
         self.AP = wlan_helper.WifiAPHelper()
         self.AP.start(AP_NAME, AP_PASS)
         
-        self.epd.drawTextFast(f"正在启动 WEB/BLE 服务", 5)
-        self.showInformations()
+        epd.drawTextFast(f"正在启动 WEB/BLE 服务", 5)
         
-        self.runWebServer()
-    
-    def hline_dots(self, x, y, width):
+        self.showInformations(epd) # draw UI
+        
+    def hline_dots(self, epd, x, y, width):
         ext = 0
         step= const(10)
         
@@ -69,67 +80,67 @@ class uiSettings(object):
             else:
                 ext = width
                 
-            self.epd.line(x, y, x + ext, y, 0)
+            epd.line(x, y, x + ext, y, 0)
             x += ext + 4
             width -= ext + 4
             
-    def showInformations(self):
+    def showInformations(self, epd):
         
-        self.epd.setColor(EPD_BLACK, EPD_WHITE)
-        self.epd.selectFont("simyou")
+        epd.setColor(EPD_BLACK, EPD_WHITE)
+        epd.selectFont("simyou")
         
         sUrl = f"http://{self.AP.ip()}"
         if WWW_PORT != 80:
             sUrl = f"{sUrl}:{WWW_PORT}"
         
-        self.epd.clear()
-        self.epd.drawText(0, 16, self.epd.WIDTH -1, 48, ALIGN_CENTER, "配置设备", 32)
-        self.hline_dots(80, 60, 800)
+        epd.clear()
+        epd.drawText(0, 16, epd.WIDTH -1, 48, ALIGN_CENTER, "配置设备", 32)
+        self.hline_dots(epd, 80, 60, 800)
         
         msg = f"1. 连接热点网络"
-        self.epd.drawText(100, 80, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 80, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 右侧扫码，连接到此设备的热点"
-        self.epd.drawText(100, 110, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 110, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 手工连接以下热点"
-        self.epd.drawText(100, 140, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 140, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"     名称: {AP_NAME}, 密码: {AP_PASS}"
-        self.epd.drawText(100, 170, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 170, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"     提示: 安卓系统使用'扫一扫', iOS 请使用系统相机直接扫。"
-        self.epd.drawText(100, 208, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 16)
+        epd.drawText(100, 208, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 16)
         
         # self.hline_dots(180, 260, 600)
         
         msg = f"2. 访问配置页面"
-        self.epd.drawText(100, 300, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 300, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 右侧扫码访问"
-        self.epd.drawText(100, 330, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 330, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 手工访问 {sUrl}"
-        self.epd.drawText(100, 360, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 360, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         msg = f"3. 使用配置应用进行配置（蓝牙）"
-        self.epd.drawText(100, 460, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 460, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 下载【e预报】应用，然后通过蓝牙连接设备"
-        self.epd.drawText(100, 490, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 490, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         msg = f"   - 名称：{ble.getBleDevName()}"
-        self.epd.drawText(100, 520, self.epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
+        epd.drawText(100, 520, epd.WIDTH -1, 48, ALIGN_LEFT, msg, 24)
         
         # AP 二维码
-        self.drawQRcodeImage(self.epd, 702, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
+        self.drawQRcodeImage(epd, 702, 80, f'WIFI:S:{AP_NAME};T:WPA;P:{AP_PASS};H:false;;')
         
         # 配置页面
-        self.drawQRcodeImage(self.epd, 708, 285, sUrl)
+        self.drawQRcodeImage(epd, 708, 285, sUrl)
         
         # 配置 app
         sUrl = "https://www.123pan.com/s/6nQ9jv-RMrBh.html"
-        self.drawQRcodeImage(self.epd, 702, 460, sUrl)
+        self.drawQRcodeImage(epd, 702, 460, sUrl)
 
-        self.epd.line(60, 600, 900, 600, 0)
+        epd.line(60, 600, 900, 600, 0)
         
-        self.epd.drawText(100, 606, 760, 606, ALIGN_CENTER, "eForecast by .NFC, firmware version: 1.0.00", 16)
-        #self.epd.selectFont("icons")
-        #self.epd.drawText(66, 606, self.epd.WIDTH -1, 610, ALIGN_LEFT, ICO_SETTING_SOLID, 24)
+        epd.drawText(100, 606, 760, 606, ALIGN_CENTER, "eForecast by .NFC, firmware version: 1.0.00", 16)
+        #epd.selectFont("icons")
+        #epd.drawText(66, 606, epd.WIDTH -1, 610, ALIGN_LEFT, ICO_SETTING_SOLID, 24)
 
-        self.epd.refresh(full=False)
+        epd.refresh(full=False)
     
     # refer https://microdot.readthedocs.io/en/stable/index.html
     def runWebServer(self):
@@ -255,3 +266,4 @@ class uiSettings(object):
                 await asyncio.sleep(0.01)
                 KeyA.update_state()
                 KeyB.update_state()
+
