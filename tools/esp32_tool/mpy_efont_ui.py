@@ -18,6 +18,10 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(608, 435)
+        icon = QIcon()
+        icon.addFile(u"appicon.png", QSize(), QIcon.Normal, QIcon.Off)
+        #icon = QIcon(QIcon.fromTheme(u"address-book-new"))
+        MainWindow.setWindowIcon(icon)
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         self.centralWidget.setLayoutDirection(Qt.LeftToRight)
@@ -124,11 +128,19 @@ class Ui_MainWindow(object):
 
         self.btnFSUpd = QPushButton(self.centralWidget)
         self.btnFSUpd.setObjectName(u"btnFSUpd")
+        icon1 = QIcon()
+        icon1.addFile(u"vfs.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnFSUpd.setIcon(icon1)
+        self.btnFSUpd.setIconSize(QSize(24, 24))
 
         self.horizontalLayout.addWidget(self.btnFSUpd)
 
         self.btnFWUpd = QPushButton(self.centralWidget)
         self.btnFWUpd.setObjectName(u"btnFWUpd")
+        icon2 = QIcon()
+        icon2.addFile(u"firmware.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.btnFWUpd.setIcon(icon2)
+        self.btnFWUpd.setIconSize(QSize(24, 24))
 
         self.horizontalLayout.addWidget(self.btnFWUpd)
 

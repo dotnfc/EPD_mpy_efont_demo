@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>eFontTool</string>
   </property>
+  <property name="windowIcon">
+   <iconset theme="address-book-new"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
@@ -36,7 +39,7 @@
           <bool>true</bool>
          </property>
          <property name="currentText">
-          <string>921600</string>
+          <string>4800</string>
          </property>
          <property name="maxVisibleItems">
           <number>8</number>
@@ -190,12 +193,32 @@
         <property name="text">
          <string>Upload FS</string>
         </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>vfs.png</normaloff>vfs.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
        </widget>
       </item>
       <item>
        <widget class="QPushButton" name="btnFWUpd">
         <property name="text">
          <string>Upload FW</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>firmware.png</normaloff>firmware.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
         </property>
        </widget>
       </item>
@@ -245,7 +268,7 @@
      <x>0</x>
      <y>0</y>
      <width>608</width>
-     <height>26</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
