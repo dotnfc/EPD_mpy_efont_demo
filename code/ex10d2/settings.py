@@ -47,8 +47,15 @@ UI_PAGES = [
     {"name":"天气", "ico":"qi-sunny", "id":3}
 ]
 
-def cfgSave():
-    ...
+def cfgUpdatePage(pid):
+    doc = {}
+    doc["ssid"] = WIFI_SSID
+    doc["passwd"] = WIFI_PASS
+
+    doc["we_key"] = QW_API_KEY
+    doc["we_city"] = QW_API_CITY
+    doc["page_nbr"] = pid
+    cfgSet(doc)
 
 def cfgGet(forWeb: bool = True) -> dict:
     '''Web/App获取配置信息'''
@@ -81,3 +88,4 @@ def cfgSet(newCfg) -> bool:
         return False
     
     return True
+

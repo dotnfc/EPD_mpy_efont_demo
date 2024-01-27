@@ -2,7 +2,7 @@
     [eForeDemo] 启动时候，临时修改加载页面
     by .NFC 2024/01/15
 """
-import time, gc, platform, sys
+import time, gc, platform, sys, machine
 from micropython import const
 import asyncio
 import wlan_helper
@@ -93,7 +93,9 @@ class uiSwitch(object):
         self.drawContents()
         asyncio.run(self.runTasks())
         
-        return self.current
+        cfgUpdatePage(self.current)
+        machine.reset()
+        #return self.current
     
     def drawItem(self, icon, title, description, x, y, id, all=True):
         if all:
@@ -182,4 +184,5 @@ class uiSwitch(object):
         self.drawItem(QW_102, "天气", "未来 5 天的天气，今天和室内的温度、湿度", 290, 320, 3, all=False)
 
         self.epd.refresh(full=False)
+
 

@@ -54,17 +54,19 @@ def checkGoSetting() ->bool:
     
     return False
 
-def check_systime(use_ntp=False):
+def check_systime():
     year, month, mday, hour, minute, second, weekday, *_ = time.localtime()
     log.info(f"local time {year}/{month}/{mday} {hour}:{minute}:{second}")
     
     if year > 2020:
         return
     
-    if use_ntp:
-        updateRTC_NTP()
-    else:
-        updateRTC_8025T()
+    if not updateRTC_8025T():
+        print("ntp used")
+        newDT = updateRTC_NTP()
+
+        updateRTC_8025T(newDT)
+        machine.reset()
 
 def updateRTC_NTP():
     '''update esp32 rtc time from ntp server'''
@@ -85,22 +87,38 @@ def updateRTC_NTP():
     if not wlan_helper.wifiHelper.connect(settings.WIFI_SSID, settings.WIFI_PASS):
         epd.drawTextFast(f"无法连接到 {settings.WIFI_SSID}", 4)
         epd.deepSleep(settings.APP_DEEP_SLEEP_TIME_MS)
-        return
+        return None
     
-    epd.drawTextFast(f"正在同步 系统时间", 4) 
-    if not ntp_clock.ntp_sync_via_wifi(settings.TIME_ZONE_GMT8):
+    epd.drawTextFast(f"正在同步 系统时间", 4)
+    ntp_clock.timezone_offset = settings.TIME_ZONE_GMT8
+    if not ntp_clock.ntp_sync_via_wifi():
         epd.drawTextFast(f"同步失败", 4)
         epd.deepSleep(settings.APP_DEEP_SLEEP_TIME_MS)
-        return
+        return None
+    else:
+        return ntp_clock.newDT
 
-def updateRTC_8025T():
+def updateRTC_8025T(newDT = None):
     '''update esp32 rtc time from ntp server'''
     import rx8025t, board
     from machine import SoftI2C, RTC
     i2c = SoftI2C(scl= board.SENSOR_SCL, sda= board.SENSOR_SDA)
     rtc = rx8025t.RX8025T(i2c)
-    rxDT = rtc.datetime()
-    RTC().datetime(tuple(rxDT))
+
+    if newDT is not None:
+        print("set rxRTC")
+        rtc.datetime(newDT) # (2034,1,25,4,18,00,00,0)
+        return True
     
+    print("get rxRTC")
+    rxDT = rtc.datetime()
+    if (rxDT[0] < 2023) or (rxDT[0] > 2030):
+        print(f"rxRTC not valid {rxDT[0]}")
+        return False # ntp update required
+
+    RTC().datetime(tuple(rxDT))
+    return True
+
 if __name__ == '__main__':
     main()
+
