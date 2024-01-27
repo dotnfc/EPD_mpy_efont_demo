@@ -93,7 +93,7 @@ def ntp_sync_via_wifi() ->bool:
 
 def test():
     ssid = "DOTNFC-HOS"
-    password = "20180903"
+    password = "********"
     
     import network
     wifi = network.WLAN(network.STA_IF)
