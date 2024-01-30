@@ -44,7 +44,7 @@ def checkGoSetting() ->bool:
     '''按键检测，是否进设置页面'''
     
     if sys.platform == 'linux':
-        return True
+        return False
     
     if KeyA.is_pressed():
         time.sleep_ms(100)

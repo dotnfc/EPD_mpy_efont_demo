@@ -94,8 +94,11 @@ class uiSwitch(object):
         asyncio.run(self.runTasks())
         
         cfgUpdatePage(self.current)
-        machine.reset()
-        #return self.current
+        if sys.platform == 'linux':
+            self.epd.closeWindow()
+            return self.current
+        else:
+            machine.reset()
     
     def drawItem(self, icon, title, description, x, y, id, all=True):
         if all:

@@ -46,5 +46,7 @@ class uiWeatherPreload(object):
             return
         
         wifiHelper.disconnect()
+        if sys.platform == 'linux':
+            self.epd.closeWindow()
         return qw_now, qw_future, qw_future_air, qw_hourly, yi_yan
 

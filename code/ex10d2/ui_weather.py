@@ -3,9 +3,7 @@
     by .NFC 2023/12/23
 """
 import time
-
-
-from  wlan_helper import wifiHelper
+import sensor
 import logging as log
 from display3c import *
 from efont import *
@@ -13,7 +11,7 @@ from efore.qw_icons import *
 from efore.city_list import china_citys
 from settings import *
 import datetime
-import ulunar, holidays, birthdays
+import ulunar
 from button import *
 
 
@@ -349,11 +347,13 @@ class uiWeather(object):
         self.epd.drawText(2, 610, 40, 40, ALIGN_LEFT, ICO_GEOALT, 24)
         
         # 电量图标
-        self.epd.drawText(254, 592, 60, 60, ALIGN_RIGHT, self.getBatInfo(), 54)
+        bat_info, bat_icon = sensor.getBatInfo()
+        self.epd.drawText(254, 600, 60, 60, ALIGN_RIGHT, bat_icon, 50)
+        self.epd.selectFont("simyou")
+        self.epd.drawText(190, 612, 64, 48, ALIGN_RIGHT, bat_info, 24)
         
         # 城市
         city = china_citys[QW_API_CITY]
-        self.epd.selectFont("simyou")
         self.epd.drawText(32, 610, 260, 48, ALIGN_LEFT, city, 24)
         
         # 一句话
@@ -389,15 +389,14 @@ class uiWeather(object):
                 tempH = temp
 
         return tempL, tempH
-                
-    def getBatInfo(self):
-        return ICO_BATE6
     
     def getIndoorTemp(self):
-        return "-15°"
+        temp = sensor.snsTemprHumidity.getTemperature()
+        return f"{temp}°"
     
     def getIndoorHumidity(self):
-        return "33.6%"
+        humidity = sensor.snsTemprHumidity.getHumidity()
+        return f"{humidity}%"
         
     def getQWIcon(self, index):
         '''依据索引获取天气图标'''

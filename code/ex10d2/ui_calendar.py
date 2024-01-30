@@ -3,7 +3,6 @@
     by .NFC 2023/12/20
 """
 import time
-from  wlan_helper import wifiHelper
 import logging as log
 import calender
 from display3c import *
@@ -12,7 +11,7 @@ from efore.qw_icons import *
 import ulunar, holidays, birthdays
 from button import *
 from settings import *
-import asyncio
+import asyncio, sensor
 
 week_day_number_cn = ("日", "一", "二", "三", "四", "五", "六")
 zodiac_icon_line = (ZODIAC_SHU, ZODIAC_NIU, ZODIAC_HU, ZODIAC_TU, ZODIAC_LONG, ZODIAC_SHE, 
@@ -82,8 +81,12 @@ class uiCalendar(object):
         s = "农历 %s(%s)年 %s%s" % (ganzhi, shengxiao, ymon, yday)
         self.epd.drawText(4, 50, self.epd.WIDTH - 1, 48, ALIGN_CENTER, s, 32)
         
-        # 显示生肖图标
+        # 电量
         self.epd.selectFont("icons")
+        bat_info, bat_icon = sensor.getBatInfo()
+        self.epd.drawText(448, 84, 64, 32, ALIGN_CENTER, bat_icon, 32)
+        
+        # 显示生肖图标
         self.epd.setColor(EPD_RED, EPD_WHITE)
         self.epd.drawText(self.epd.WIDTH - 104, 10, 100, 100, ALIGN_RIGHT, self.getZodiacIcon(lunar), 80)
 
@@ -266,5 +269,3 @@ class uiCalendar(object):
             self.drawBody(self.draw_year, self.draw_month, self.draw_mday, lunar)
             self.epd.refresh() # this will do deep-sleep. use init() to refresh again.
             self.redraw = False
-
-
