@@ -64,10 +64,10 @@ class WifiSTAHelper(object):
             if bssid == ssid:
                 continue
             
-            callback(cb_param, ssid, password)
-            if self.connect(ssid, password):
-                self.ssid = ssid
-                self.passwd = password
+            callback(cb_param, bssid, bpass)
+            if self.connect(bssid, bpass):
+                self.ssid = bssid
+                self.passwd = bpass
                 return True
             
         return False
