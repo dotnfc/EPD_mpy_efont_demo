@@ -83,10 +83,7 @@ def check_systime():
         machine.reset()
 
 def connect_to_wifi(epd, ssid, passwd):
-    import wlan_helper
     epd.drawTextFast(f"系统时间需要同步，正在连接网络 {ssid}", 4)
-    if not wlan_helper.wifiHelper.connect(ssid, passwd):
-        epd.drawTextFast(f"无法连接到 {ssid}", 4)
             
 def updateRTC_NTP():
     '''update esp32 rtc time from ntp server'''
