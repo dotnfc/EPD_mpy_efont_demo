@@ -15,6 +15,7 @@ import settings, gc
 def main():
     log.setLevel(log.INFO)
     log.info("EFore Demo Started")
+    checkBatteryLow()
     
     page_id = settings.HOME_PAGE
     
@@ -54,6 +55,19 @@ def checkGoSetting() ->bool:
     
     return False
 
+def checkBatteryLow():
+    import sensor
+    if sensor.isUSBPowered():
+        return
+
+    vol = sensor.snsBattery.read()
+    print(f"当前电压 {vol}")
+    if vol < 3.7:
+        print("电量低，请充电")
+    elif vol < 3.5:
+        print("电量过低，休眠一年")
+        machine.deepsleep(1000 * 60 * 60 * 24 * 356)
+    
 def check_systime():
     year, month, mday, hour, minute, second, weekday, *_ = time.localtime()
     log.info(f"local time {year}/{month}/{mday} {hour}:{minute}:{second}")
@@ -68,9 +82,16 @@ def check_systime():
         updateRTC_8025T(newDT)
         machine.reset()
 
+def connect_to_wifi(epd, ssid, passwd):
+    import wlan_helper
+    epd.drawTextFast(f"系统时间需要同步，正在连接网络 {ssid}", 4)
+    if not wlan_helper.wifiHelper.connect(ssid, passwd):
+        epd.drawTextFast(f"无法连接到 {ssid}", 4)
+            
 def updateRTC_NTP():
     '''update esp32 rtc time from ntp server'''
-    import display, wlan_helper, settings, ntp_clock
+    import display, settings, ntp_clock
+    from wlan_helper import wifiHelper
     epd = display.EpdImage()
     epd.init()
     epd.clear(display.EPD_WHITE)
@@ -83,9 +104,10 @@ def updateRTC_NTP():
     epd.selectFont("simyou")
     epd.initTextFast("simyou", epd.WIDTH, 20)
  
-    epd.drawTextFast(f"系统时间需要同步，正在连接网络 {settings.WIFI_SSID}", 4)
-    if not wlan_helper.wifiHelper.connect(settings.WIFI_SSID, settings.WIFI_PASS):
-        epd.drawTextFast(f"无法连接到 {settings.WIFI_SSID}", 4)
+    if wifiHelper.connects(settings.WIFI_SSID, settings.WIFI_PASS, settings.WIFI_BACKUP_AP, connect_to_wifi, epd):
+        settings.cfgUpdateWiFi(wifiHelper.ssid, wifiHelper.passwd)
+    else:
+        epd.drawTextFast(f"无法连接到网络热点，进入休眠", 4)
         epd.deepSleep(settings.APP_DEEP_SLEEP_TIME_MS)
         return None
     

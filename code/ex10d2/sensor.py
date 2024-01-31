@@ -108,10 +108,36 @@ class BatterySensor(object):
         return str
 
 def voltage_to_percentage(voltage):
-    min_voltage = 3.2
-    max_voltage = 4.2
-    percentage = ((voltage - min_voltage) / (max_voltage - min_voltage)) * 100
-    return int(max(0, min(100, percentage)))
+    print(f"battery {voltage} V")
+    
+    voltage_table = [
+        (4.15, 100),
+        (4.13, 95),
+        (4.11, 90),
+        (4.08, 85),
+        (4.04, 80),
+        (4.01, 75),
+        (3.97, 70),
+        (3.93, 65),
+        (3.89, 60),
+        (3.85, 55),
+        (3.81, 50),
+        (3.76, 45),
+        (3.71, 40),
+        (3.66, 35),
+        (3.61, 30),
+        (3.55, 25),
+        (3.49, 20),
+        (3.43, 15),
+        (3.37, 10),
+        (3.32, 5),
+        (3.27, 0),
+        (0, 0)
+    ]
+    for threshold, percentage in voltage_table:
+        if voltage >= threshold:
+            return percentage
+    return 0
 
 def getBatInfo():
     vol = snsBattery.read()

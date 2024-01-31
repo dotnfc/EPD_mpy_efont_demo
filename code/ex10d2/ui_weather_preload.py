@@ -25,11 +25,13 @@ class uiWeatherPreload(object):
         """Run the weather preloading"""
         log.info("Preload Weather")
         
-        self.epd.drawTextFast(f"正在连接网络 {WIFI_SSID}", 4)
-        if not wifiHelper.connect(WIFI_SSID, WIFI_PASS):
-            self.epd.drawTextFast(f"无法连接到 {WIFI_SSID}", 4)
+        # connect to wifi
+        if wifiHelper.connects(WIFI_SSID, WIFI_PASS, WIFI_BACKUP_AP, self.connect_to_wifi, self.epd):
+            cfgUpdateWiFi(wifiHelper.ssid, wifiHelper.passwd)
+        else:
+            self.epd.drawTextFast(f"无法连接到网络热点，进入休眠", 4)
             self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
-            return
+            return None
         
         self.epd.drawTextFast(f"正在请求天气信息", 4)
         print("req weathers")
@@ -50,3 +52,8 @@ class uiWeatherPreload(object):
             self.epd.closeWindow()
         return qw_now, qw_future, qw_future_air, qw_hourly, yi_yan
 
+    def connect_to_wifi(self, epd, ssid, passwd):
+        import wlan_helper
+        epd.drawTextFast(f"正在为获取天气信息，连接网络 {ssid}", 4)
+        if not wlan_helper.wifiHelper.connect(ssid, passwd):
+            epd.drawTextFast(f"无法连接到 {ssid}", 4)

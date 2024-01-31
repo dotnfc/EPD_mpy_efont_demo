@@ -2,8 +2,17 @@
 import io, json, deflate
 from micropython import const
 
-APP_DEEP_SLEEP_TIME_MS = const(1000 * 60 * 60)
+APP_DEEP_SLEEP_TIME_MS     = const(1000 * 60 * 60 * 1) # 1 小时
+APP_DEEP_SLEEP_WEATHER_MS  = const(1000 * 60 * 60 * 1) # 1 小时
+APP_DEEP_SLEEP_CALENDAR_MS = const(1000 * 60 * 60 * 8) # 8 小时
+
 TIME_ZONE_GMT8 = const(28800)
+
+# back wifi account
+WIFI_BACKUP_AP = {
+    "DOTNFC-IP8": "12345678",
+    "DOTNFC-HOS": "12345678"
+}
 
 try:
     with open("efore.json", 'r') as file:
@@ -47,6 +56,16 @@ UI_PAGES = [
     {"name":"天气", "ico":"qi-sunny", "id":3}
 ]
 
+def cfgUpdateWiFi(ssid, password):
+    doc = {}
+    doc["ssid"] = ssid
+    doc["passwd"] = password
+
+    doc["we_key"] = QW_API_KEY
+    doc["we_city"] = QW_API_CITY
+    doc["page_nbr"] = HOME_PAGE
+    cfgSet(doc)
+        
 def cfgUpdatePage(pid):
     doc = {}
     doc["ssid"] = WIFI_SSID

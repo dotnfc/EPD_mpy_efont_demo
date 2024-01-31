@@ -54,7 +54,7 @@ class uiWeather(object):
         self.epd.refresh()
         print("refresh done")
                 
-        self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
+        self.epd.deepSleep(APP_DEEP_SLEEP_WEATHER_MS)
 
     def drawLines(self):
         self.epd.setColor(EPD_RED, EPD_WHITE)

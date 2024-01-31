@@ -17,6 +17,8 @@ class WifiSTAHelper(object):
     def __init__(self):
         self.wlan = network.WLAN(network.STA_IF)
         self.wlan.active(False)
+        self.ssid = ""
+        self.passwd = ""
         #self.wlan.disconnect() # may not be needed
 
     def connect(self, ssid, password, timeout=7000):
@@ -27,7 +29,7 @@ class WifiSTAHelper(object):
             return True
         
         self.wlan.active(True)
-            
+
         self.wlan.connect(ssid, password)
 
         while not self.wlan.isconnected():
@@ -43,6 +45,32 @@ class WifiSTAHelper(object):
             log.info("Unable to connect")
             self.wlan.active(False)
             return False
+    
+    def connects(self, ssid, password, backups, callback, cb_param) -> bool:
+        '''Connect prefered WiFi AP, if failed, try backups in settings'''
+
+        self.ssid = ""
+        self.passwd = ""
+        
+        # normal connection
+        callback(cb_param, ssid, password)
+        if self.connect(ssid, password):
+            self.ssid = ssid
+            self.passwd = password
+            return True
+        
+        # failed, try backups
+        for bssid, bpass in backups.items():
+            if bssid == ssid:
+                continue
+            
+            callback(cb_param, ssid, password)
+            if self.connect(ssid, password):
+                self.ssid = ssid
+                self.passwd = password
+                return True
+            
+        return False
     
     def test_connect(self, ssid, password, disconn = True, timeout=8000) ->bool:
         if self.isconnected():

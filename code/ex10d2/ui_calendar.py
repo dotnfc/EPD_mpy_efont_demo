@@ -234,7 +234,7 @@ class uiCalendar(object):
             #    self.updateDisplay()
             
             self.updateDisplay() # 硬件上，绘完就休眠
-            self.epd.deepSleep(APP_DEEP_SLEEP_TIME_MS)
+            self.epd.deepSleep(APP_DEEP_SLEEP_CALENDAR_MS)
             
     async def buttonCheckLoop(self):
         '''按键处理任务'''
