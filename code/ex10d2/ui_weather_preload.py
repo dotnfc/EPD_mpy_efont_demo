@@ -53,7 +53,5 @@ class uiWeatherPreload(object):
         return qw_now, qw_future, qw_future_air, qw_hourly, yi_yan
 
     def connect_to_wifi(self, epd, ssid, passwd):
-        import wlan_helper
         epd.drawTextFast(f"正在为获取天气信息，连接网络 {ssid}", 4)
-        if not wlan_helper.wifiHelper.connect(ssid, passwd):
-            epd.drawTextFast(f"无法连接到 {ssid}", 4)
+
