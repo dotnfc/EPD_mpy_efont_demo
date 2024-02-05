@@ -119,19 +119,24 @@ class EpdImage(EPD):
         
         self.font.setSize(size)
         
-    def rounded_rect(self, x, y, w, h, r, color):
-        self.ellipse(x + r, y + r, r, r, color, False, 2) # left-top
-        self.ellipse(x + w - r, y + r, r, r, color, False, 1) # right-top
-        self.ellipse(x + r, y + h - r, r, r, color, False, 4) # left-bottom
-        self.ellipse(x + w - r, y + h - r, r, r, color, False, 8) # right-bottom
+    def rounded_rect(self, x, y, w, h, r, color=0, fill=False):
+        self.ellipse(x + r, y + r, r, r, color, fill, 2) # left-top
+        self.ellipse(x + w - r, y + r, r, r, color, fill, 1) # right-top
+        self.ellipse(x + r, y + h - r, r, r, color, fill, 4) # left-bottom
+        self.ellipse(x + w - r, y + h - r, r, r, color, fill, 8) # right-bottom
         
-        # horizon
-        self.hline(x + r, y, w - 2 * r, color)
-        self.hline(x + r, y + h, w - 2 * r, color)
-        
-        # vertical
-        self.vline(x, y + r, h - 2 * r, color)
-        self.vline(x + w, y + r, h - 2 * r, color)
+        if fill:
+            self.rect(x + r, y, w - 2 * r, r, color, fill)
+            self.rect(x, y + r, w + 1, h - 2 * r, color, fill)
+            self.rect(x + r, y + h - r, w - 2 * r, r + 1, color, fill)
+        else:
+            # horizon
+            self.hline(x + r, y, w - 2 * r, color)
+            self.hline(x + r, y + h, w - 2 * r, color)
+            
+            # vertical
+            self.vline(x, y + r, h - 2 * r, color)
+            self.vline(x + w, y + r, h - 2 * r, color)
 
     def hline_dots(self, x, y, width):
         ext = 0

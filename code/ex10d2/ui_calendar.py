@@ -140,15 +140,17 @@ class uiCalendar(object):
         # 假/班
         if strHoliday == '假':
             self.epd.setColor(EPD_RED, EPD_WHITE)
-            self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
+            # self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
+            self.epd.rounded_rect(day_x, rect[1]+ 4, 24, 21, 3, 1, True)
             self.epd.setColor(EPD_WHITE, EPD_RED)
-            self.epd.drawText(day_x, rect[1] + 5, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
+            self.epd.drawText(day_x, rect[1] + 6, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
             self.epd.setColor(EPD_RED, EPD_WHITE)
         elif strHoliday == '班':
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
-            self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
+            # self.epd.rect_3c(day_x, rect[1]+ 4, 24, 21, 1, True)
+            self.epd.rounded_rect(day_x, rect[1]+ 4, 24, 21, 3, 1, True)
             self.epd.setColor(EPD_WHITE, EPD_BLACK)
-            self.epd.drawText(day_x, rect[1] +5, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
+            self.epd.drawText(day_x, rect[1] +6, 24, rect[3], ALIGN_CENTER, strHoliday, 16)
             self.epd.setColor(EPD_BLACK, EPD_WHITE)
             
         # 家人生日
@@ -254,7 +256,6 @@ class uiCalendar(object):
     def start(self):
         """Run the weather station display loop"""
         log.info("Calendar Started")
-        #wifiHelper.connect(WIFI_SSID, WIFI_PASS)
         
         asyncio.run(self.runTasks())
         

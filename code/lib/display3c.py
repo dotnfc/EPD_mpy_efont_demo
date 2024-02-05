@@ -106,20 +106,25 @@ class EpdImage(EPD):
             self.font.setRender(self.fb)    # update current font render
             self.font.setColor(self.foreColor, self.backColor)
 
-    def rounded_rect(self, x, y, w, h, r, c):
+    def rounded_rect(self, x, y, w, h, r, c, fill=False):
         color = self.convert_color(c)
-        self.fb.ellipse(x + r, y + r, r, r, color, False, 2) # left-top
-        self.fb.ellipse(x + w - r, y + r, r, r, color, False, 1) # right-top
-        self.fb.ellipse(x + r, y + h - r, r, r, color, False, 4) # left-bottom
-        self.fb.ellipse(x + w - r, y + h - r, r, r, color, False, 8) # right-bottom
+        self.ellipse_3c(x + r, y + r, r, r, color, fill, 2) # left-top
+        self.ellipse_3c(x + w - r, y + r, r, r, color, fill, 1) # right-top
+        self.ellipse_3c(x + r, y + h - r, r, r, color, fill, 4) # left-bottom
+        self.ellipse_3c(x + w - r, y + h - r, r, r, color, fill, 8) # right-bottom
         
-        # horizon
-        self.fb.hline(x + r, y, w - 2 * r, color)
-        self.fb.hline(x + r, y + h, w - 2 * r, color)
-        
-        # vertical
-        self.fb.vline(x, y + r, h - 2 * r, color)
-        self.fb.vline(x + w, y + r, h - 2 * r, color)
+        if fill:
+            self.rect_3c(x + r, y, w - 2 * r, r, color, fill)
+            self.rect_3c(x, y + r, w + 1, h - 2 * r, color, fill)
+            self.rect_3c(x + r, y + h - r, w - 2 * r, r + 1, color, fill)
+        else:
+            # horizon
+            self.hline(x + r, y, w - 2 * r, color)
+            self.hline(x + r, y + h, w - 2 * r, color)
+            
+            # vertical
+            self.vline(x, y + r, h - 2 * r, color)
+            self.vline(x + w, y + r, h - 2 * r, color)
                     
     def loadFont(self, fonName, size=16):
         '''Load font file from storage.
@@ -201,13 +206,13 @@ class EpdImage(EPD):
         '''
         self.fb.rect(x, y, w, h, self.convert_color(c), fill)
 
-    def ellipse_3c(self, x, y, xr, yr, c, fill=False):
+    def ellipse_3c(self, x, y, xr, yr, c, fill=False, m=15):
         '''
         Draw an ellipse at the given location. 
         Radii xr and yr define the geometry; equal values cause a circle to be drawn. 
         The c parameter defines the color.
         '''
-        self.fb.ellipse(x, y, xr, yr, self.convert_color(c), fill)
+        self.fb.ellipse(x, y, xr, yr, self.convert_color(c), fill, m)
 
     def convert_color(self, c):
         if c:
