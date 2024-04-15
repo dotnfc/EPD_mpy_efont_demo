@@ -60,8 +60,14 @@ def ntp_clock_settime(host):
     print(t)
     
     tm = time.gmtime(t)
-
-    newDT = (tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0)
+    # month 1-12
+    # mday 1-31
+    # hour is 0-23
+    # minute is 0-59
+    # second is 0-59
+    # weekday is 0-6 for Mon-Sun
+    # yearday is 1-366
+    newDT = (tm[0], tm[1], tm[2], tm[6], tm[3], tm[4], tm[5], 0)
     return newDT
 
 def ntp_sync_host(host) ->bool:

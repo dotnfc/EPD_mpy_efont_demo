@@ -87,20 +87,24 @@ class RX8025T():
     def datetime(self, DT=None):
         if DT == None:
             self.i2c.readfrom_mem_into(RX8025T_I2C_ADDRESS, RX8025T_REG_SECOND, self.buf)
-            self.DT[0] = self.FROMBCD(self.buf[6]) + 2000 
-            self.DT[1] = self.FROMBCD(self.buf[5])
-            self.DT[2] = self.FROMBCD(self.buf[4])
-            self.DT[3] = int(math.log2(self.buf[3]))
-            self.DT[4] = self.FROMBCD(self.buf[2]) 
-            self.DT[5] = self.FROMBCD(self.buf[1]) 
-            self.DT[6] = self.FROMBCD(self.buf[0]) 
+            # print([f"{b:02x}" for b in self.buf], sep=' ')
+            if self.buf[3] == 0 or self.buf[3] > 0x40:
+                self.buf[3] = 1 # get rid of math error
+
+            self.DT[0] = self.FROMBCD(self.buf[6]) + 2000  # YY
+            self.DT[1] = self.FROMBCD(self.buf[5]) # MM
+            self.DT[2] = self.FROMBCD(self.buf[4]) # DD
+            self.DT[3] = int(math.log2(self.buf[3])) # WEAK, see 'week number'
+            self.DT[4] = self.FROMBCD(self.buf[2]) # HH
+            self.DT[5] = self.FROMBCD(self.buf[1]) # mm
+            self.DT[6] = self.FROMBCD(self.buf[0]) # SS
             self.DT[7] = 0
             return self.DT
         else:
             self.buf[0] = self.TOBCD(DT[6])   
             self.buf[1] = self.TOBCD(DT[5])  
             self.buf[2] = self.TOBCD(DT[4])  
-            self.buf[3] = 1<<DT[3] 
+            self.buf[3] = 1<<DT[3]  # week number: Sun-01h, 02h, 04h, 08h, 10h, 20h, Sat-40h
             self.buf[4] = self.TOBCD(DT[2])   
             self.buf[5] = self.TOBCD(DT[1])   
             self.buf[6] = self.TOBCD(DT[0]) 
