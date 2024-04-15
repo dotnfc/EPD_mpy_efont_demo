@@ -188,4 +188,3 @@ class uiSwitch(object):
 
         self.epd.refresh(full=False)
 
-

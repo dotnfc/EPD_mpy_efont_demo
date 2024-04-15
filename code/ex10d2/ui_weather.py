@@ -52,7 +52,7 @@ class uiWeather(object):
         self.drawBody(year, month, mday, lunar)
         self.drawFooter()
         self.epd.refresh()
-        print("refresh done")
+        print(f"refresh done, sleep {APP_DEEP_SLEEP_WEATHER_MS}")
                 
         self.epd.deepSleep(APP_DEEP_SLEEP_WEATHER_MS)
 

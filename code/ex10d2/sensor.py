@@ -109,7 +109,6 @@ class BatterySensor(object):
 
 def voltage_to_percentage(voltage):
     print(f"battery {voltage} V")
-    
     voltage_table = [
         (4.2, 100),
         (4.14, 99),
@@ -153,7 +152,7 @@ def voltage_to_percentage(voltage):
         (3.28, 7),
         (3.26, 4),
         (3.24, 2),
-        (3.20, 0),
+        (3.22, 0),
     ]
     for threshold, percentage in voltage_table:
         if voltage >= threshold:
@@ -216,4 +215,5 @@ snsBattery = BatterySensor()
 if __name__ == '__main__':
     # snsTemprHumidity.read()
     print(snsBattery.getVoltageForApp())
+    print(getBatInfo())
 

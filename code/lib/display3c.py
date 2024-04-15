@@ -107,17 +107,19 @@ class EpdImage(EPD):
             self.font.setColor(self.foreColor, self.backColor)
 
     def rounded_rect(self, x, y, w, h, r, c, fill=False):
-        color = self.convert_color(c)
-        self.ellipse_3c(x + r, y + r, r, r, color, fill, 2) # left-top
-        self.ellipse_3c(x + w - r, y + r, r, r, color, fill, 1) # right-top
-        self.ellipse_3c(x + r, y + h - r, r, r, color, fill, 4) # left-bottom
-        self.ellipse_3c(x + w - r, y + h - r, r, r, color, fill, 8) # right-bottom
         
+        self.ellipse_3c(x + r, y + r, r, r, c, fill, 2) # left-top
+        self.ellipse_3c(x + w - r, y + r, r, r, c, fill, 1) # right-top
+        self.ellipse_3c(x + r, y + h - r, r, r, c, fill, 4) # left-bottom
+        self.ellipse_3c(x + w - r, y + h - r, r, r, c, fill, 8) # right-bottom
+                
         if fill:
-            self.rect_3c(x + r, y, w - 2 * r, r, color, fill)
-            self.rect_3c(x, y + r, w + 1, h - 2 * r, color, fill)
-            self.rect_3c(x + r, y + h - r, w - 2 * r, r + 1, color, fill)
+            self.rect_3c(x + r, y, w - 2 * r, r, c, fill)
+            self.rect_3c(x, y + r, w + 1, h - 2 * r, c, fill)
+            self.rect_3c(x + r, y + h - r, w - 2 * r, r + 1, c, fill)
         else:
+            color = self.convert_color(c)
+            
             # horizon
             self.hline(x + r, y, w - 2 * r, color)
             self.hline(x + r, y + h, w - 2 * r, color)

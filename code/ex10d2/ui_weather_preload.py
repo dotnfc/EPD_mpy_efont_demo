@@ -54,4 +54,3 @@ class uiWeatherPreload(object):
 
     def connect_to_wifi(self, epd, ssid, passwd):
         epd.drawTextFast(f"正在为获取天气信息，连接网络 {ssid}", 4)
-

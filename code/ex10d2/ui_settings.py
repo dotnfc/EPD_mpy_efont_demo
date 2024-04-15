@@ -266,4 +266,3 @@ class uiSettings(object):
                 await asyncio.sleep(0.01)
                 KeyA.update_state()
                 KeyB.update_state()
-
