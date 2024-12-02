@@ -23,12 +23,12 @@ def main():
         switch_page = uiSwitch()
         page_id = switch_page.start()
     
-    check_systime()
-    
     try:
         if page_id == 2:
+            check_systime()
             uiCalendar().start()
         elif page_id == 3:
+            check_systime()
             preloader = uiWeatherPreload()
             qw_now, qw_future, qw_future_air, qw_hourly, yi_yan = preloader.start()
             uiWeather().start(qw_now, qw_future, qw_future_air, qw_hourly, yi_yan)
