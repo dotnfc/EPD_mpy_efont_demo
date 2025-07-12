@@ -1,4 +1,5 @@
 # EFont Demo
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/espressif/esp-brookesia)
 
 ## 目录
 
